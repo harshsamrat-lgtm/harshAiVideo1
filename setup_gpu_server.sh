@@ -1,29 +1,35 @@
 #!/bin/bash
 # ==============================================================================
-# AI Hindi Cinema Studio - 1-Click NVIDIA RTX 5070 Ti (CUDA 12.8) Setup Script
-# Installs PyTorch, Diffusers, Transformers, Accelerate and tests Real GPU Video Generation
+# AI Hindi Cinema Studio - PyTorch CUDA 12.8 / Blackwell (RTX 5070 Ti) Setup
 # ==============================================================================
 
 set -e
 
 echo "================================================================="
-echo "🚀 Setting up AI Video Engine for NVIDIA RTX 5070 Ti (16GB VRAM)"
+echo "🔧 Fixing PyTorch CUDA Driver Matching for RTX 5070 Ti (CUDA 12.8)"
 echo "================================================================="
 
-# 1. System packages
-apt-get update -y || true
-apt-get install -y ffmpeg git curl wget python3-pip aria2 || true
+# 1. Uninstall mismatched torch
+echo "🧹 Removing old PyTorch..."
+pip uninstall -y torch torchvision torchaudio || true
 
-# 2. Python AI & CUDA Libraries
-echo "📦 Installing PyTorch, Diffusers, Transformers, Accelerate..."
-pip install --upgrade pip || true
-pip install fastapi uvicorn pydantic python-multipart pillow requests edge-tts huggingface_hub tqdm || true
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 || pip install torch torchvision torchaudio || true
+# 2. Install PyTorch matching CUDA 12.8 / 12.6 driver
+echo "📦 Installing PyTorch with CUDA 12.8 / 12.6 support..."
+pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128 || \
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126 || \
+pip install torch torchvision torchaudio
+
+# 3. Ensure diffusers, transformers, accelerate are present
 pip install diffusers transformers accelerate imageio[ffmpeg] || true
 
-# 3. Test Real GPU Diffusion immediately
+# 4. Verify CUDA initialization
 echo "================================================================="
-echo "🧪 Running Real GPU Video Diffusion Test on RTX 5070 Ti..."
+echo "🧪 Checking CUDA GPU Status..."
+python3 -c "import torch; print('CUDA Available:', torch.cuda.is_available()); print('Device Name:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'Not available')"
+
+# 5. Run Real GPU Video Diffusion Test
+echo "================================================================="
+echo "🎬 Running Real 20-Step AI Video Diffusion Test on RTX 5070 Ti..."
 python3 test_gpu_real_video.py
 
 echo "================================================================="
