@@ -1,9 +1,13 @@
 """
-AI Hindi Cinema Studio - FastAPI Application Server (User-Selectable Multi-Model Edition).
+AI Hindi Cinema Studio - FastAPI Application Server.
+Provides full lifecycle management, story-to-screenplay analysis,
+instant asset generation, manual re-generation for Characters/Locations/Voices/Scenes,
+and user-selectable AI Video Diffusion.
 """
 
 import os
 import sys
+import random
 import subprocess
 import asyncio
 from typing import Dict, Any, List, Optional
@@ -12,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
 
-from app.models import StoryInputRequest, ProjectState, SceneModel
+from app.models import StoryInputRequest, ProjectState, SceneModel, CharacterModel, LocationModel
 from app.engines.story_director import StoryDirectorEngine
 from app.engines.image_studio import ImageStudioEngine
 from app.engines.voice_studio import VoiceStudioEngine
@@ -21,8 +25,8 @@ from app.engines.movie_assembler import MovieAssemblerEngine
 
 app = FastAPI(
     title="AI Hindi Cinema Studio API",
-    description="Multi-Model Hindi Story-to-Movie Generation Platform with User Model Selection",
-    version="2.1.0"
+    description="Multi-Model Hindi Story-to-Movie Generation Platform",
+    version="2.2.0"
 )
 
 app.add_middleware(
@@ -66,7 +70,7 @@ def get_system_status():
             {"id": "minimax_h3", "name": "🎬 MiniMax H3 (Hailuo 3.0 15s Native Ref2VA)", "size": "18.5 GB"},
             {"id": "wan2_1_1_3b", "name": "⚡ Wan2.1-1.3B (Ultra-Fast 720p Diffusion)", "size": "3.2 GB"},
             {"id": "svd_xt", "name": "🚀 Stable Video Diffusion XT (Native GPU)", "size": "4.5 GB"},
-            {"id": "cloud_diffusion", "name": "🌐 Cloud AI Video Diffusion (Zero-Wait)", "size": "Cloud"}
+            {"id": "cloud_diffusion", "name": "🌐 Cloud Neural Video Diffusion (Instant 0-Wait)", "size": "Cloud"}
         ],
         "comfyui_gpu_connected": comfy_online,
         "active_projects": len(PROJECTS_DB)
@@ -82,28 +86,92 @@ async def restart_system_engine():
 
 @app.post("/api/story/analyze", response_model=ProjectState)
 async def analyze_hindi_story(request: StoryInputRequest):
+    """
+    Parses Hindi story into context-matched screenplay and generates fresh 4K AI Assets.
+    """
     project = director_engine.parse_story(request)
 
-    # 1. Location 4K Concept Art
+    # 1. Fresh Location 4K Concept Art
     for loc in project.locations:
-        await image_studio.generate_location_concept_art(loc)
+        await image_studio.generate_location_concept_art(loc, force_refresh=True)
 
-    # 2. Character 360 Portraits
+    # 2. Fresh Character 360 Portraits
     for char in project.characters:
-        await image_studio.generate_character_portrait_sheet(char)
+        await image_studio.generate_character_portrait_sheet(char, force_refresh=True)
 
-    # 3. Keyframes & Voice
+    # 3. Fresh Composite Keyframes & Hindi Voice Dialogues
     for sc in project.scenes:
         loc = next((l for l in project.locations if l.location_id == sc.location_id), project.locations[0])
         char = next((c for c in project.characters if c.character_id in sc.character_ids), project.characters[0])
+        
         sc.composite_keyframe_url = await image_studio.generate_composite_scene_keyframe(
-            sc.scene_number, loc, char, sc.visual_prompt
+            sc.scene_number, loc, char, sc.visual_prompt, force_refresh=True
         )
         if sc.dialogue:
             await voice_engine.generate_character_dialogue(sc.dialogue, char)
 
     PROJECTS_DB[project.project_id] = project
     return project
+
+
+@app.post("/api/character/{project_id}/regenerate/{character_id}")
+async def regenerate_character_face(
+    project_id: str, character_id: str, appearance: Optional[str] = None
+):
+    """Regenerates an individual character's face with a new seed or updated look."""
+    if project_id not in PROJECTS_DB:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project = PROJECTS_DB[project_id]
+    char = next((c for c in project.characters if c.character_id == character_id), None)
+    if not char:
+        raise HTTPException(status_code=404, detail="Character not found")
+
+    if appearance:
+        char.appearance = appearance
+    char.seed = random.randint(10000, 99999)
+
+    await image_studio.generate_character_portrait_sheet(char, force_refresh=True)
+
+    # Refresh keyframes for scenes with this character
+    for sc in project.scenes:
+        if char.character_id in sc.character_ids:
+            loc = next((l for l in project.locations if l.location_id == sc.location_id), project.locations[0])
+            sc.composite_keyframe_url = await image_studio.generate_composite_scene_keyframe(
+                sc.scene_number, loc, char, sc.visual_prompt, force_refresh=True
+            )
+
+    return char
+
+
+@app.post("/api/location/{project_id}/regenerate/{location_id}")
+async def regenerate_location_art(
+    project_id: str, location_id: str, custom_style: Optional[str] = None
+):
+    """Regenerates an individual location's 4K concept art with a new seed."""
+    if project_id not in PROJECTS_DB:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project = PROJECTS_DB[project_id]
+    loc = next((l for l in project.locations if l.location_id == location_id), None)
+    if not loc:
+        raise HTTPException(status_code=404, detail="Location not found")
+
+    if custom_style:
+        loc.architecture_style = custom_style
+    loc.seed = random.randint(10000, 99999)
+
+    await image_studio.generate_location_concept_art(loc, force_refresh=True)
+
+    # Refresh keyframes for scenes with this location
+    for sc in project.scenes:
+        if sc.location_id == loc.location_id:
+            char = next((c for c in project.characters if c.character_id in sc.character_ids), project.characters[0])
+            sc.composite_keyframe_url = await image_studio.generate_composite_scene_keyframe(
+                sc.scene_number, loc, char, sc.visual_prompt, force_refresh=True
+            )
+
+    return loc
 
 
 @app.post("/api/render/draft/{project_id}")
@@ -116,8 +184,6 @@ async def generate_draft_movie(
 
     project = PROJECTS_DB[project_id]
     project.status = "drafting"
-
-    print(f"\n[API] 🎬 Generating Draft Movie with Selected Model: {video_model}...")
 
     for sc in project.scenes:
         loc = next((l for l in project.locations if l.location_id == sc.location_id), project.locations[0])
@@ -158,7 +224,7 @@ async def regenerate_single_scene(
     char = next((c for c in project.characters if c.character_id in scene.character_ids), project.characters[0])
 
     scene.composite_keyframe_url = await image_studio.generate_composite_scene_keyframe(
-        scene.scene_number, loc, char, scene.visual_prompt
+        scene.scene_number, loc, char, scene.visual_prompt, force_refresh=True
     )
 
     await video_studio.generate_15s_scene_video(

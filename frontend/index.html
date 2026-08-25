@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Hindi Cinema Studio | Multi-Model Edition with AI Video Model Selector</title>
+  <title>AI Hindi Cinema Studio | Precision Hindi Screenplay & Multi-Model Video Engine</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,11 +11,11 @@
     :root {
       --bg-primary: #080a0f;
       --bg-secondary: #10141d;
-      --bg-card: rgba(18, 22, 32, 0.85);
-      --border-color: rgba(255, 215, 0, 0.18);
-      --border-focus: rgba(255, 204, 0, 0.6);
+      --bg-card: rgba(18, 22, 32, 0.88);
+      --border-color: rgba(255, 215, 0, 0.2);
+      --border-focus: rgba(255, 204, 0, 0.65);
       --gold-primary: #ffc400;
-      --gold-glow: rgba(255, 196, 0, 0.3);
+      --gold-glow: rgba(255, 196, 0, 0.35);
       --accent-blue: #38bdf8;
       --accent-purple: #c084fc;
       --accent-green: #10b981;
@@ -37,7 +37,7 @@
     }
 
     header {
-      background: rgba(16, 20, 29, 0.9);
+      background: rgba(16, 20, 29, 0.92);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-color);
       padding: 16px 32px;
@@ -73,8 +73,6 @@
     .pill-flux { background: rgba(192, 132, 252, 0.15); color: #d8b4fe; border-color: rgba(192, 132, 252, 0.3); }
     .pill-wan { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.3); }
     .pill-tts { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
-
-    .header-status { display: flex; align-items: center; gap: 14px; }
 
     .btn-restart {
       background: rgba(239, 68, 68, 0.15);
@@ -263,6 +261,8 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     }
 
+    .asset-card:hover { transform: translateY(-4px); border-color: var(--border-focus); }
+
     .asset-img-wrap {
       width: 100%;
       height: 220px;
@@ -277,6 +277,8 @@
       object-fit: cover;
       transition: transform 0.3s;
     }
+
+    .asset-card:hover .asset-img { transform: scale(1.03); }
 
     .asset-badge {
       position: absolute;
@@ -315,6 +317,7 @@
       align-items: center;
       gap: 10px;
       margin-top: 10px;
+      margin-bottom: 12px;
     }
 
     .audio-player-box audio { width: 100%; height: 32px; }
@@ -425,8 +428,8 @@
       <div class="model-pills">
         <span class="pill pill-flux">Flux.1 4K Art</span>
         <span class="pill pill-wan">Wan2.1 (14B/1.3B)</span>
-        <span class="pill pill-flux">MiniMax H3 Ref2VA</span>
-        <span class="pill pill-tts">Neural Hindi TTS</span>
+        <span class="pill pill-flux">MiniMax H3</span>
+        <span class="pill pill-tts">Neural Hindi Voice</span>
       </div>
     </div>
     <div class="header-status">
@@ -458,7 +461,7 @@
       <div class="glass-card">
         <div class="card-title">
           <span>हिंदी कहानी इनपुट एवं AI स्क्रीनप्ले डायरेक्टर</span>
-          <span class="badge">Multi-Model Cinema Engine</span>
+          <span class="badge">Context-Aware Scene Mapping</span>
         </div>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
@@ -509,7 +512,7 @@
           <span class="badge">100% Architectural Consistency</span>
         </div>
         <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
-          कहानी में प्रयुक्त सभी स्थानों की Flux.1 द्वारा उत्पन्न असली 4K तस्वीरें। पूरी मूवी में ये स्थान एक समान रहेंगे।
+          कहानी में प्रयुक्त सभी स्थानों की Flux.1 द्वारा उत्पन्न असली 4K तस्वीरें। आप किसी भी लोकेशन की फोटो को री-रोल कर सकते हैं।
         </p>
         <div class="grid-3" id="locations-grid"></div>
       </div>
@@ -522,6 +525,9 @@
           <span>कलाकार की असली शक्ल एवं आवाज (Flux.1 FaceID & Voice Studio)</span>
           <span class="badge">360° Human Portraits & Neural Voices</span>
         </div>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+          पात्रों के असली चेहरे और हिंदी आवाज। आप किसी भी पात्र का चेहरा बदलने के लिए '🔄 नया चेहरा बनाएं' दबा सकते हैं।
+        </p>
         <div class="grid-3" id="characters-grid"></div>
       </div>
     </div>
@@ -534,7 +540,7 @@
         <div class="model-selector-box">
           <div>
             <label style="color:var(--gold-primary); margin-bottom:4px; font-size:14px;">🎥 वीडियो बनाने के लिए AI मॉडल चुनें (Choose AI Video Model):</label>
-            <div style="font-size:12px; color:var(--text-muted);">आप अपनी पसंद के अनुसार वीडियो मॉडल चुनकर रेंडर कर सकते हैं।</div>
+            <div style="font-size:12px; color:var(--text-muted);">अपनी पसंद के अनुसार वीडियो मॉडल चुनकर रेंडर करें।</div>
           </div>
           <div style="min-width: 380px;">
             <select id="selected-video-model" style="background:#0a0c10; font-weight:700; color:var(--gold-primary); border-color:var(--gold-primary);">
@@ -549,8 +555,8 @@
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <div>
-            <div class="card-title" style="margin-bottom: 4px;">15-सेकंड सीन स्टोरीबोर्ड (Real Composite Keyframes)</div>
-            <p style="color: var(--text-muted); font-size: 13px;">चुने गए मॉडल द्वारा 15-सेकंड की AI वीडियो क्लिप्स रेंडर करें।</p>
+            <div class="card-title" style="margin-bottom: 4px;">15-सेकंड सीन स्टोरीबोर्ड (Exact Context Matched)</div>
+            <p style="color: var(--text-muted); font-size: 13px;">कहानी की हर पंक्ति से सटीकता से जुड़े हुए 15-सेकंड के सीन्स।</p>
           </div>
           <button class="btn btn-gold" onclick="generateDraftMovie()">
             <span>⚡ ड्राफ्ट मूवी रेंडर करें (Generate 15s Movie)</span>
@@ -627,7 +633,7 @@
 
       btn.disabled = true;
       pBanner.style.display = 'flex';
-      pText.innerText = '🎭 [Flux.1 + Gemini] कहानी का विश्लेषण व 4K AI तस्वीरें बनाई जा रही हैं... (लगभग 10-15 सेकंड)';
+      pText.innerText = '🎭 [Flux.1 + Gemini] कहानी का सटीक विश्लेषण व नई 4K AI तस्वीरें बनाई जा रही हैं... (10-15 सेकंड)';
 
       try {
         const res = await fetch(`${API_BASE}/api/story/analyze`, {
@@ -644,7 +650,7 @@
         currentProject = await res.json();
         renderProjectAssets();
         
-        pText.innerText = '✅ सभी 4K तस्वीरें, 360° चेहरे और आवाज तैयार हैं!';
+        pText.innerText = '✅ सभी नई 4K तस्वीरें, चेहरे और आवाज तैयार हैं!';
         setTimeout(() => { pBanner.style.display = 'none'; }, 3000);
         
         document.querySelectorAll('.tab-btn')[3].click();
@@ -656,17 +662,64 @@
       }
     }
 
+    async function reRollCharacterFace(charId) {
+      if (!currentProject) return;
+      const pBanner = document.getElementById('progress-banner');
+      const pText = document.getElementById('progress-text');
+      pBanner.style.display = 'flex';
+      pText.innerText = '👤 [Flux.1 FaceID] नया 360° मानव चेहरा बनाया जा रहा है...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/character/${currentProject.project_id}/regenerate/${charId}`, { method: 'POST' });
+        const updatedChar = await res.json();
+        
+        // Refresh project state
+        const pRes = await fetch(`${API_BASE}/api/project/${currentProject.project_id}`);
+        currentProject = await pRes.json();
+        renderProjectAssets();
+        
+        pText.innerText = '✅ नया चेहरा सफलतापूर्वक तैयार हो गया!';
+        setTimeout(() => { pBanner.style.display = 'none'; }, 2000);
+      } catch (err) {
+        alert('चेहरा री-जनरेट में त्रुटि: ' + err.message);
+        pBanner.style.display = 'none';
+      }
+    }
+
+    async function reRollLocationArt(locId) {
+      if (!currentProject) return;
+      const pBanner = document.getElementById('progress-banner');
+      const pText = document.getElementById('progress-text');
+      pBanner.style.display = 'flex';
+      pText.innerText = '🏰 [Flux.1] नई 4K लोकेशन फोटो बनाई जा रही है...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/location/${currentProject.project_id}/regenerate/${locId}`, { method: 'POST' });
+        const updatedLoc = await res.json();
+        
+        const pRes = await fetch(`${API_BASE}/api/project/${currentProject.project_id}`);
+        currentProject = await pRes.json();
+        renderProjectAssets();
+        
+        pText.innerText = '✅ नई 4K लोकेशन फोटो तैयार हो गई!';
+        setTimeout(() => { pBanner.style.display = 'none'; }, 2000);
+      } catch (err) {
+        alert('लोकेशन फोटो री-जनरेट में त्रुटि: ' + err.message);
+        pBanner.style.display = 'none';
+      }
+    }
+
     function renderProjectAssets() {
       if (!currentProject) return;
 
-      // 1. Render Locations with Real 4K Art
+      // 1. Render Locations with Re-Roll Button
       const locContainer = document.getElementById('locations-grid');
       locContainer.innerHTML = '';
       currentProject.locations.forEach(loc => {
         locContainer.innerHTML += `
           <div class="asset-card">
             <div class="asset-img-wrap">
-              <img class="asset-img" src="${loc.master_establishing_url}" alt="${loc.name}">
+              <img class="asset-img" src="${loc.master_establishing_url}?t=${Date.now()}" alt="${loc.name}">
               <div class="asset-badge">FLUX.1 4K ART</div>
             </div>
             <div class="asset-body">
@@ -676,19 +729,22 @@
                 <b>प्रॉप्स:</b> ${loc.anchor_props.join(', ')}<br>
                 <b>कलर टोन:</b> ${loc.color_palette}
               </div>
+              <button class="btn btn-secondary" style="width:100%; justify-content:center; padding:8px;" onclick="reRollLocationArt('${loc.location_id}')">
+                🔄 नई 4K फोटो बनाएं (Re-Roll Art)
+              </button>
             </div>
           </div>
         `;
       });
 
-      // 2. Render Characters with Real 3-Angle Human Portraits & Voice Audio
+      // 2. Render Characters with Re-Roll Face Button & Voice
       const charContainer = document.getElementById('characters-grid');
       charContainer.innerHTML = '';
       currentProject.characters.forEach(char => {
         const sampleScene = currentProject.scenes.find(s => s.dialogue && s.dialogue.character_id === char.character_id);
         const audioPlayerHtml = sampleScene && sampleScene.dialogue.audio_url 
           ? `<div class="audio-player-box">
-              <span style="font-size:12px; color:var(--accent-green);">🎙️ आवाज सैंपल:</span>
+              <span style="font-size:12px; color:var(--accent-green);">🎙️ आवाज:</span>
               <audio controls src="${sampleScene.dialogue.audio_url}"></audio>
              </div>`
           : '';
@@ -696,7 +752,7 @@
         charContainer.innerHTML += `
           <div class="asset-card">
             <div class="asset-img-wrap">
-              <img class="asset-img" src="${char.master_portrait_url}" alt="${char.name}">
+              <img class="asset-img" src="${char.master_portrait_url}?t=${Date.now()}" alt="${char.name}">
               <div class="asset-badge">FLUX.1 FACE-ID</div>
             </div>
             <div class="asset-body">
@@ -707,18 +763,21 @@
                 <b>न्यूरल वॉइस:</b> ${char.voice_profile}
               </div>
               ${audioPlayerHtml}
+              <button class="btn btn-secondary" style="width:100%; justify-content:center; padding:8px;" onclick="reRollCharacterFace('${char.character_id}')">
+                🔄 नया चेहरा बनाएं (Re-Roll Face)
+              </button>
             </div>
           </div>
         `;
       });
 
-      // 3. Render 15s Scenes Timeline with Real Composite Keyframes
+      // 3. Render 15s Scenes Timeline with Exact Context Mapping
       const scenesContainer = document.getElementById('scenes-timeline');
       scenesContainer.innerHTML = '';
       currentProject.scenes.forEach(sc => {
         const videoHtml = sc.draft_video_url 
-          ? `<video src="${sc.draft_video_url}" controls style="width:100%; height:100%; object-fit:cover;"></video>`
-          : `<img src="${sc.composite_keyframe_url}" alt="Keyframe">`;
+          ? `<video src="${sc.draft_video_url}?t=${Date.now()}" controls style="width:100%; height:100%; object-fit:cover;"></video>`
+          : `<img src="${sc.composite_keyframe_url}?t=${Date.now()}" alt="Keyframe">`;
 
         scenesContainer.innerHTML += `
           <div class="scene-card">
@@ -735,7 +794,7 @@
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
               <button class="btn btn-secondary" onclick="regenerateScene(${sc.scene_number})">
-                🔄 री-जनरेट
+                🔄 सीन री-जनरेट
               </button>
             </div>
           </div>
@@ -762,7 +821,7 @@
 
         if (currentProject.full_draft_movie_url) {
           const player = document.getElementById('full-movie-player');
-          player.src = currentProject.full_draft_movie_url;
+          player.src = currentProject.full_draft_movie_url + '?t=' + Date.now();
           player.load();
 
           document.getElementById('btn-download-mp4').href = currentProject.full_draft_movie_url;
@@ -812,7 +871,7 @@
 
         if (currentProject.full_final_movie_url) {
           const player = document.getElementById('full-movie-player');
-          player.src = currentProject.full_final_movie_url;
+          player.src = currentProject.full_final_movie_url + '?t=' + Date.now();
           player.load();
 
           document.getElementById('movie-quality-badge').innerText = `1080p Full HD Master [${chosenModel.toUpperCase()}]`;

@@ -1,23 +1,23 @@
 """
 AI Image Studio Engine (Flux.1 Schnell & SDXL Realistic Vision).
 Instantly generates photorealistic 4K Location Concept Art, Character Turnaround Portraits,
-and Composite Keyframes for every scene during the Screenplay Analysis phase.
+and Scene Composite Keyframes with 100% fresh generation and manual re-generation capabilities.
 """
 
 import os
+import random
 import urllib.parse
 import requests
 import asyncio
 from typing import Optional
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw
 from app.models import LocationModel, CharacterModel
 
 
 class ImageStudioEngine:
     """
     State-of-the-Art Multi-Model Image Generator.
-    Uses Flux.1 / SDXL photorealism pipelines with high-speed cloud inference
-    and local diffusers fallback.
+    Supports fresh on-demand generation, cache busting, and individual asset regeneration.
     """
 
     def __init__(
@@ -33,42 +33,42 @@ class ImageStudioEngine:
         for d in [self.locations_dir, self.characters_dir, self.keyframes_dir]:
             os.makedirs(d, exist_ok=True)
 
-    async def generate_location_concept_art(self, location: LocationModel) -> str:
+    async def generate_location_concept_art(self, location: LocationModel, force_refresh: bool = False) -> str:
         """
-        Generates photorealistic 4K establishing environmental concept art using Flux.1.
+        Generates 4K establishing environmental concept art using Flux.1.
         """
         filename = f"loc_{location.location_id}_{location.seed}.jpg"
         filepath = os.path.join(self.locations_dir, filename)
 
-        if not os.path.exists(filepath):
+        if force_refresh or not os.path.exists(filepath):
             prompt = (
-                f"Masterpiece 8K cinematic establishing wide shot of {location.name}, "
+                f"Masterpiece 8K cinematic wide establishing shot of {location.name}, "
                 f"authentic Indian architecture, {location.architecture_style}, "
                 f"featuring {', '.join(location.anchor_props)}, "
                 f"atmosphere with {location.color_palette}, {location.lighting_scheme}, "
                 f"35mm photograph, hyper-detailed, photorealistic, Unreal Engine 5 render, award-winning cinematography."
             )
-            await self._fetch_ai_image(prompt, filepath, width=1280, height=720, model="flux")
+            await self._fetch_ai_image(prompt, filepath, width=1280, height=720, model="flux", seed=location.seed)
 
         location.master_establishing_url = f"/media/locations/{filename}"
         return location.master_establishing_url
 
-    async def generate_character_portrait_sheet(self, character: CharacterModel) -> str:
+    async def generate_character_portrait_sheet(self, character: CharacterModel, force_refresh: bool = False) -> str:
         """
-        Generates photorealistic master portrait sheet for character face & costume consistency.
+        Generates master 3-angle human portrait for character facial & costume consistency.
         """
         filename = f"char_{character.character_id}_{character.seed}.jpg"
         filepath = os.path.join(self.characters_dir, filename)
 
-        if not os.path.exists(filepath):
+        if force_refresh or not os.path.exists(filepath):
             gender_term = "Indian man" if character.gender == "Male" else "Indian woman"
             prompt = (
-                f"Cinematic 8K studio portrait of {character.name}, a {character.age} year old {gender_term}, "
+                f"Cinematic 8K studio character portrait of {character.name}, a {character.age} year old {gender_term}, "
                 f"{character.appearance}, wearing authentic {character.costume}, "
                 f"dramatic Bollywood lighting, high-contrast rim light, 85mm portrait lens, "
                 f"photorealistic skin texture, highly detailed, expressive eyes, professional cinematic photography."
             )
-            await self._fetch_ai_image(prompt, filepath, width=768, height=1024, model="flux")
+            await self._fetch_ai_image(prompt, filepath, width=768, height=1024, model="flux", seed=character.seed)
 
         character.master_portrait_url = f"/media/characters/{filename}"
         return character.master_portrait_url
@@ -78,36 +78,37 @@ class ImageStudioEngine:
         scene_num: int,
         location: LocationModel,
         character: CharacterModel,
-        visual_prompt: str
+        visual_prompt: str,
+        force_refresh: bool = False
     ) -> str:
         """
-        Generates the composite keyframe blending the consistent character in the location.
+        Generates composite keyframe blending the consistent character in the location.
         """
-        filename = f"keyframe_scene_{scene_num}_{location.location_id}_{character.character_id}.jpg"
+        filename = f"keyframe_scene_{scene_num}_{location.location_id}_{character.character_id}_{location.seed}.jpg"
         filepath = os.path.join(self.keyframes_dir, filename)
 
-        if not os.path.exists(filepath):
+        if force_refresh or not os.path.exists(filepath):
             prompt = (
                 f"8K Cinematic movie scene. {visual_prompt}. "
                 f"Character {character.name} ({character.appearance}, wearing {character.costume}) "
                 f"in environment of {location.name} ({location.architecture_style}). "
                 f"Cinematic color grading, 35mm anamorphic lens, realistic shadows, depth of field, IMAX quality."
             )
-            await self._fetch_ai_image(prompt, filepath, width=1280, height=720, model="flux")
+            await self._fetch_ai_image(prompt, filepath, width=1280, height=720, model="flux", seed=location.seed + scene_num)
 
         return f"/media/composite_keyframes/{filename}"
 
-    async def _fetch_ai_image(self, prompt: str, output_path: str, width: int = 1280, height: int = 720, model: str = "flux"):
+    async def _fetch_ai_image(
+        self, prompt: str, output_path: str, width: int = 1280, height: int = 720, model: str = "flux", seed: int = 42
+    ):
         """
         Fetches AI-generated photorealistic image from ultra-fast inference APIs (Flux / SDXL)
         with local procedural backup.
         """
         encoded_prompt = urllib.parse.quote(prompt)
-        
-        # 1. High-Speed Flux.1 / SDXL Generation Endpoint
         api_urls = [
-            f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}&model={model}&nologo=true&seed=42",
-            f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}&model=turbo&nologo=true&seed=42"
+            f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}&model={model}&nologo=true&seed={seed}",
+            f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}&model=turbo&nologo=true&seed={seed}"
         ]
 
         for url in api_urls:
@@ -117,29 +118,24 @@ class ImageStudioEngine:
                 if response.status_code == 200 and len(response.content) > 10000:
                     with open(output_path, "wb") as f:
                         f.write(response.content)
-                    print(f"[Image Studio] ✅ AI Image generated via Flux.1: {output_path}")
+                    print(f"[Image Studio] ✅ Fresh AI Image generated: {output_path}")
                     return
             except Exception as e:
-                print(f"[Image Studio] API note: {e}")
+                print(f"[Image Studio] API fetch note: {e}")
 
-        # 2. Local Procedural Canvas Fallback if offline
+        # Local stylized procedural fallback
         self._render_cinematic_fallback(prompt, output_path, width, height)
 
     def _render_cinematic_fallback(self, prompt: str, output_path: str, width: int, height: int):
-        """Generates a warm, cinematic stylized canvas if internet is unavailable."""
         img = Image.new("RGB", (width, height), color=(20, 24, 32))
         draw = ImageDraw.Draw(img)
-
-        # Ambient Gradient
         for y in range(height):
             r = int(35 * (1 - y/height) + 15 * (y/height))
             g = int(25 * (1 - y/height) + 18 * (y/height))
             b = int(20 * (1 - y/height) + 30 * (y/height))
             draw.line([(0, y), (width, y)], fill=(r, g, b))
 
-        # Gold Border
         draw.rectangle([30, 30, width-30, height-30], outline=(255, 196, 0), width=2)
         draw.text((60, 60), "🎬 AI HINDI CINEMA STUDIO - CONCEPT ART", fill=(255, 215, 0))
         draw.text((60, 100), prompt[:90] + "...", fill=(220, 220, 230))
-
         img.save(output_path, "JPEG", quality=90)
