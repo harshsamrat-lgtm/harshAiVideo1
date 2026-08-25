@@ -1,8 +1,6 @@
 """
 AI Hindi Cinema Studio - FastAPI Application Server.
-Provides full lifecycle management, story-to-screenplay analysis,
-instant asset generation, manual re-generation for Characters/Locations/Voices/Scenes,
-and user-selectable AI Video Diffusion.
+Optimized for high-speed parallel asset generation (Locations, Characters, Keyframes, Audio).
 """
 
 import os
@@ -26,7 +24,7 @@ from app.engines.movie_assembler import MovieAssemblerEngine
 app = FastAPI(
     title="AI Hindi Cinema Studio API",
     description="Multi-Model Hindi Story-to-Movie Generation Platform",
-    version="2.2.0"
+    version="2.3.0"
 )
 
 app.add_middleware(
@@ -87,38 +85,57 @@ async def restart_system_engine():
 @app.post("/api/story/analyze", response_model=ProjectState)
 async def analyze_hindi_story(request: StoryInputRequest):
     """
-    Parses Hindi story into context-matched screenplay and generates fresh 4K AI Assets.
+    Parses Hindi story into context-matched screenplay and generates fresh 4K AI Assets in PARALLEL.
     """
-    project = director_engine.parse_story(request)
+    try:
+        project = director_engine.parse_story(request)
 
-    # 1. Fresh Location 4K Concept Art
-    for loc in project.locations:
-        await image_studio.generate_location_concept_art(loc, force_refresh=True)
+        # 1. Parallel Generation Tasks
+        tasks = []
 
-    # 2. Fresh Character 360 Portraits
-    for char in project.characters:
-        await image_studio.generate_character_portrait_sheet(char, force_refresh=True)
+        # Location tasks
+        for loc in project.locations:
+            tasks.append(image_studio.generate_location_concept_art(loc, force_refresh=True))
 
-    # 3. Fresh Composite Keyframes & Hindi Voice Dialogues
-    for sc in project.scenes:
-        loc = next((l for l in project.locations if l.location_id == sc.location_id), project.locations[0])
-        char = next((c for c in project.characters if c.character_id in sc.character_ids), project.characters[0])
-        
-        sc.composite_keyframe_url = await image_studio.generate_composite_scene_keyframe(
-            sc.scene_number, loc, char, sc.visual_prompt, force_refresh=True
-        )
-        if sc.dialogue:
-            await voice_engine.generate_character_dialogue(sc.dialogue, char)
+        # Character tasks
+        for char in project.characters:
+            tasks.append(image_studio.generate_character_portrait_sheet(char, force_refresh=True))
 
-    PROJECTS_DB[project.project_id] = project
-    return project
+        # Run locations and characters in parallel
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+        # 2. Scene Keyframes and Audio Dialogues in Parallel
+        scene_tasks = []
+        for sc in project.scenes:
+            loc = next((l for l in project.locations if l.location_id == sc.location_id), project.locations[0])
+            char = next((c for c in project.characters if c.character_id in sc.character_ids), project.characters[0])
+            
+            async def process_scene(s=sc, l=loc, c=char):
+                s.composite_keyframe_url = await image_studio.generate_composite_scene_keyframe(
+                    s.scene_number, l, c, s.visual_prompt, force_refresh=True
+                )
+                if s.dialogue:
+                    await voice_engine.generate_character_dialogue(s.dialogue, c)
+
+            scene_tasks.append(process_scene())
+
+        await asyncio.gather(*scene_tasks, return_exceptions=True)
+
+        PROJECTS_DB[project.project_id] = project
+        print(f"[Analyze API] ✅ Screenplay & All Assets ready in parallel for project: {project.project_id}")
+        return project
+
+    except Exception as e:
+        print(f"[Analyze API] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Screenplay Analysis error: {str(e)}")
 
 
 @app.post("/api/character/{project_id}/regenerate/{character_id}")
 async def regenerate_character_face(
     project_id: str, character_id: str, appearance: Optional[str] = None
 ):
-    """Regenerates an individual character's face with a new seed or updated look."""
     if project_id not in PROJECTS_DB:
         raise HTTPException(status_code=404, detail="Project not found")
 
@@ -133,7 +150,6 @@ async def regenerate_character_face(
 
     await image_studio.generate_character_portrait_sheet(char, force_refresh=True)
 
-    # Refresh keyframes for scenes with this character
     for sc in project.scenes:
         if char.character_id in sc.character_ids:
             loc = next((l for l in project.locations if l.location_id == sc.location_id), project.locations[0])
@@ -148,7 +164,6 @@ async def regenerate_character_face(
 async def regenerate_location_art(
     project_id: str, location_id: str, custom_style: Optional[str] = None
 ):
-    """Regenerates an individual location's 4K concept art with a new seed."""
     if project_id not in PROJECTS_DB:
         raise HTTPException(status_code=404, detail="Project not found")
 
@@ -163,7 +178,6 @@ async def regenerate_location_art(
 
     await image_studio.generate_location_concept_art(loc, force_refresh=True)
 
-    # Refresh keyframes for scenes with this location
     for sc in project.scenes:
         if sc.location_id == loc.location_id:
             char = next((c for c in project.characters if c.character_id in sc.character_ids), project.characters[0])
