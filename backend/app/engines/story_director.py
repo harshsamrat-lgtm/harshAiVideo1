@@ -1,7 +1,5 @@
 """
-AI Story Director Engine (Context-Aware Hindi Screenplay Director).
-Accurately analyzes Hindi stories, extracts authentic Characters, consistent Locations,
-and maps every narrative line to the exact character and location mentioned in the text.
+AI Story Director Engine (Vivid Action & Context-Aware Prompt Generator).
 """
 
 import os
@@ -13,11 +11,6 @@ from app.models import StoryInputRequest, ProjectState, CharacterModel, Location
 
 
 class StoryDirectorEngine:
-    """
-    Intelligent Screenplay Director.
-    Ensures 100% semantic matching between story text, characters, locations, and 15s scenes.
-    """
-
     def __init__(self, api_key: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY")
 
@@ -48,19 +41,13 @@ class StoryDirectorEngine:
     def _extract_screenplay(
         self, project_id: str, text: str, genre: str, visual_style: str, duration: int = 15
     ) -> Tuple[List[CharacterModel], List[LocationModel], List[SceneModel]]:
-        """
-        Parses text sentence by sentence to accurately identify who is acting,
-        where the action takes place, and what dialogue is spoken.
-        """
-        # Split text into meaningful cinematic beats (sentences / lines)
         raw_chunks = [s.strip() for s in re.split(r'[।\.\n\?!]+', text) if len(s.strip()) > 6]
         if not raw_chunks:
-            raw_chunks = [text.strip() or "कहानी की शुरुआत एक रहस्यमयी मोड़ से होती है।"]
+            raw_chunks = [text.strip() or "कहानी की शुरुआत एक रोमांचक मोड़ से होती है।"]
 
-        # 1. Detect Unique Characters
+        # 1. Detect Characters
         detected_names = self._detect_character_names(text)
         characters: List[CharacterModel] = []
-
         voice_profiles = [
             ("hi-IN-MadhurNeural", "Male", 28, "तीखे नैन-नक्श, मध्यम कद, गहरी आँखें, गंभीर एवं दृढ़ निश्चयी चेहरा", "पारंपरिक सूती सफेद धोती और कुर्ता"),
             ("hi-IN-SwaraNeural", "Female", 24, "सुंदर भावपूर्ण आँखें, सादगी भरा सौम्य चेहरा, लंबे काले बाल", "पारंपरिक भारतीय लाल और सुनहरी साड़ी"),
@@ -70,10 +57,8 @@ class StoryDirectorEngine:
 
         for idx, name in enumerate(detected_names):
             preset = voice_profiles[idx % len(voice_profiles)]
-            # Gender heuristic based on Hindi name patterns
             gender = "Female" if any(name.endswith(e) for e in ["ा", "ी", "िया", "ाली", "ाता"]) and name not in ["राजा", "राणा", "रामा", "रामू", "साधु", "बाबा"] else preset[1]
             char_id = f"CHAR_{project_id}_{idx+1}_{name.replace(' ', '_')}"
-            
             characters.append(CharacterModel(
                 character_id=char_id,
                 name=name,
@@ -87,7 +72,7 @@ class StoryDirectorEngine:
                 seed=random.randint(10000, 99999)
             ))
 
-        # 2. Detect Unique Locations
+        # 2. Detect Locations
         locations: List[LocationModel] = []
         loc_specs = self._detect_locations_with_metadata(text, genre, project_id)
         for spec in loc_specs:
@@ -102,23 +87,22 @@ class StoryDirectorEngine:
                 seed=random.randint(10000, 99999)
             ))
 
-        # 3. Create Context-Matched 15-Second Scenes
+        # 3. Create Context-Matched 15s Scenes with Vivid Visual Prompts
         scenes: List[SceneModel] = []
         last_loc = locations[0]
         last_char = characters[0]
 
         camera_templates = [
-            "15s slow cinematic dolly-in tracking shot focusing on character expressions and surroundings",
-            "15s dramatic low-angle crane sweep revealing the scale and texture of the environment",
-            "15s steady panning shot capturing character movement and subtle eye contact",
-            "15s wide establishing IMAX angle showcasing rich architectural depth and atmosphere",
-            "15s emotional medium close-up with soft background depth of field"
+            ("Slow cinematic tracking shot focusing on character emotional reaction", "चरित्र के चेहरे और हावभाव पर केंद्रित स्लो ट्रैकिंग शॉट"),
+            ("Atmospheric low-angle camera sweep showcasing environment scale", "लोकेशन की वास्तुकला को दर्शाता लो-एंगल कैमरा पैन"),
+            ("Dynamic forward dolly shot following character movement", "चरित्र के कदमों और गतिविधि का पीछा करता फॉरवर्ड डॉली शॉट"),
+            ("Wide establishing IMAX angle revealing dramatic landscape depth", "गहराई और माहौल को प्रकट करता विस्तृत वाइड शॉट")
         ]
 
         for idx, chunk in enumerate(raw_chunks):
             scene_num = idx + 1
             
-            # Find the best matched character for this specific sentence
+            # Context-matched character
             cur_char = last_char
             for c in characters:
                 if c.name in chunk:
@@ -126,7 +110,7 @@ class StoryDirectorEngine:
                     last_char = c
                     break
 
-            # Find the best matched location for this specific sentence
+            # Context-matched location
             cur_loc = last_loc
             for loc in locations:
                 keywords = loc.anchor_props + [loc.name]
@@ -134,28 +118,30 @@ class StoryDirectorEngine:
                     cur_loc = loc
                     last_loc = loc
                     break
-                elif "जंगल" in chunk or "पेड़" in chunk or "रास्ता" in chunk:
+                elif "जंगल" in chunk or "पेड़" in chunk or "रास्ता" in chunk or "अंधेरा" in chunk:
                     forest_loc = next((l for l in locations if "जंगल" in l.name or "Forest" in l.architecture_style), None)
                     if forest_loc:
                         cur_loc = forest_loc
                         last_loc = forest_loc
                         break
-                elif "घर" in chunk or "कमरा" in chunk or "दीवार" in chunk or "दरवाजा" in chunk:
+                elif "घर" in chunk or "कमरा" in chunk or "दीवार" in chunk or "खिड़की" in chunk or "दरवाजा" in chunk:
                     house_loc = next((l for l in locations if "घर" in l.name or "Hut" in l.architecture_style), None)
                     if house_loc:
                         cur_loc = house_loc
                         last_loc = house_loc
                         break
 
-            cam_move = camera_templates[idx % len(camera_templates)]
+            cam_en, cam_hi = camera_templates[idx % len(camera_templates)]
 
-            # Formulate accurate 15s visual prompt tying this exact character in this exact location
+            # Convert action to vivid diffusion prompt
+            action_desc = self._translate_action_to_english_prompt(chunk, cur_char.name, cur_loc.name)
+
             visual_prompt = (
-                f"Masterpiece 8K cinematic movie scene. {cam_move}. "
+                f"{action_desc}. {cam_en}. "
                 f"Protagonist: {cur_char.name} ({cur_char.appearance}, wearing {cur_char.costume}). "
-                f"Location: {cur_loc.name} ({cur_loc.architecture_style}, featuring {', '.join(cur_loc.anchor_props[:2])}). "
+                f"Setting: {cur_loc.name} ({cur_loc.architecture_style}). "
                 f"Lighting: {cur_loc.lighting_scheme}. Palette: {cur_loc.color_palette}. "
-                f"Scene Action: {chunk}. 35mm anamorphic lens, hyper-realistic, photorealistic Bollywood cinematography."
+                f"8K resolution, 35mm anamorphic cinema lens, hyper-realistic, award winning photography."
             )
 
             dialogue = DialogueModel(
@@ -172,10 +158,10 @@ class StoryDirectorEngine:
                 location_id=cur_loc.location_id,
                 location_name=cur_loc.name,
                 character_ids=[cur_char.character_id],
-                camera_movement=cam_move,
+                camera_movement=f"{cam_hi} ({cam_en})",
                 lighting_mood=cur_loc.lighting_scheme,
                 visual_prompt=visual_prompt,
-                negative_prompt="blurry, distorted face, bad anatomy, low quality, morphing artifacts, extra fingers, cartoon, 3d render look",
+                negative_prompt="blurry, distorted face, low quality, morphing artifacts, extra fingers, cartoon, 3d render look",
                 dialogue=dialogue,
                 sfx=["Cinematic environmental ambiance", "Subtle footsteps", "Wind breeze"],
                 bgm_mood="Intense dramatic Indian orchestral strings with ethereal emotional flute",
@@ -183,6 +169,22 @@ class StoryDirectorEngine:
             ))
 
         return characters, locations, scenes
+
+    def _translate_action_to_english_prompt(self, hindi_chunk: str, char_name: str, loc_name: str) -> str:
+        """Translates specific Hindi action beats into vivid diffusion prompt descriptors."""
+        desc = f"Cinematic scene of {char_name} in {loc_name}"
+        if "खिड़की" in hindi_chunk or "खड़ा" in hindi_chunk:
+            desc = f"Dramatic view of {char_name} standing by an old carved wooden window, looking outside intently as morning golden sunlight hits rustic clay walls"
+        elif "दरवाजा" in hindi_chunk or "रास्ता" in hindi_chunk:
+            desc = f"Atmospheric shot of {char_name} opening a heavy rustic wooden door and stepping out onto an ominous misty dirt path leading into dense wilderness"
+        elif "जंगल" in hindi_chunk or "आवाज" in hindi_chunk:
+            desc = f"Suspenseful shot of {char_name} cautiously walking through a mysterious dense forest with ancient banyan trees, ground fog, and eerie moonlight"
+        elif "तय किया" in hindi_chunk or "रहस्य" in hindi_chunk:
+            desc = f"Close-up intense determination on {char_name}'s face, cinematic Bollywood rim lighting, clutching his traditional clothes ready for a perilous mystery"
+        else:
+            desc = f"Cinematic shot of {char_name} actively experiencing the story moment: '{hindi_chunk[:50]}' with rich realistic environment interaction"
+
+        return desc
 
     def _detect_character_names(self, text: str) -> List[str]:
         known = [
@@ -222,18 +224,6 @@ class StoryDirectorEngine:
                 "props": ["विशाल बरगद के पेड़", "जमीन पर बिछा कोहरा", "पथरीला कच्चा रास्ता"],
                 "palette": "Deep Midnight Blue, Indigo & Ethereal Emerald Green",
                 "lighting": "Atmospheric moonlight filtering through thick canopy with ground fog"
-            })
-            idx += 1
-
-        if "महल" in text or "दरबार" in text or "किला" in text:
-            locs.append({
-                "id": f"LOC_{project_id}_{idx}",
-                "name": "शाही महल का भव्य दरबार",
-                "desc": "संगमरमर के खंभों और सोने की नक्काशी वाला राजसी भारतीय महल",
-                "style": "Grand Majestic Rajputana Palace Hall",
-                "props": ["सफेद संगमरमर के खंभे", "सोने के नक्काशीदार दीप", "लाल शाही कालीन"],
-                "palette": "Royal Crimson, Imperial Gold & Pure White Marble",
-                "lighting": "Cinematic warm chandelier glow with high-contrast architectural shadows"
             })
             idx += 1
 

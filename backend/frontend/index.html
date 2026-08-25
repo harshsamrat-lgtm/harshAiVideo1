@@ -673,7 +673,6 @@
         const res = await fetch(`${API_BASE}/api/character/${currentProject.project_id}/regenerate/${charId}`, { method: 'POST' });
         const updatedChar = await res.json();
         
-        // Refresh project state
         const pRes = await fetch(`${API_BASE}/api/project/${currentProject.project_id}`);
         currentProject = await pRes.json();
         renderProjectAssets();
@@ -843,18 +842,30 @@
     }
 
     async function regenerateScene(sceneNumber) {
-      const customPrompt = prompt('इस सीन के लिए नया प्रॉम्प्ट दर्ज करें (या खाली छोड़ें):');
+      const currentScene = currentProject.scenes.find(s => s.scene_number === sceneNumber);
+      const defaultPrompt = currentScene ? currentScene.visual_prompt : '';
+      const customPrompt = prompt('इस सीन के लिए प्रॉम्प्ट संपादित करें या नया विवरण लिखें:', defaultPrompt);
+      
+      if (customPrompt === null) return;
+
       const chosenModel = document.getElementById('selected-video-model').value;
+      const pBanner = document.getElementById('progress-banner');
+      const pText = document.getElementById('progress-text');
+      pBanner.style.display = 'flex';
+      pText.innerText = `🎬 सीन ${sceneNumber} को [${chosenModel.toUpperCase()}] द्वारा नए प्रॉम्प्ट के साथ रेंडर किया जा रहा है...`;
+
       try {
         const res = await fetch(`${API_BASE}/api/scene/${currentProject.project_id}/regenerate/${sceneNumber}?custom_prompt=${encodeURIComponent(customPrompt || '')}&video_model=${chosenModel}`, {
           method: 'POST'
         });
-        alert(`सीन ${sceneNumber} [${chosenModel}] द्वारा सफलतापूर्वक री-जनरेट हो गया!`);
         const pRes = await fetch(`${API_BASE}/api/project/${currentProject.project_id}`);
         currentProject = await pRes.json();
         renderProjectAssets();
+        pText.innerText = `✅ सीन ${sceneNumber} सफलतापूर्वक नए प्रॉम्प्ट के अनुसार तैयार हो गया!`;
+        setTimeout(() => { pBanner.style.display = 'none'; }, 3000);
       } catch (err) {
         alert('सीन री-जनरेट में त्रुटि: ' + err.message);
+        pBanner.style.display = 'none';
       }
     }
 
