@@ -1,9 +1,12 @@
 """
 AI Hindi Cinema Studio - FastAPI Application Server.
 Orchestrates MiniMax H3 Video Gen, Character Consistency, Location DNA, Voice Studio, and Movie Assembly.
+Includes 1-Click App & GPU Engine Restart Capability.
 """
 
 import os
+import sys
+import subprocess
 import asyncio
 from typing import Dict, Any, List
 from fastapi import FastAPI, HTTPException, BackgroundTasks
@@ -72,6 +75,39 @@ def get_system_status():
         "comfyui_gpu_connected": comfy_online,
         "mode": "GPU Accelerated" if comfy_online else "High-Fidelity Studio Simulation",
         "active_projects": len(PROJECTS_DB)
+    }
+
+
+@app.post("/api/system/restart")
+async def restart_system_engine():
+    """
+    1-Click App & GPU Engine Restart Endpoint.
+    Resets project memory and attempts to reconnect or re-launch ComfyUI on port 8188.
+    """
+    global PROJECTS_DB
+    PROJECTS_DB.clear()
+
+    # Re-check and attempt to launch ComfyUI if offline
+    if not video_engine._check_comfyui_online():
+        comfy_dir = "../ComfyUI" if os.path.exists("../ComfyUI") else "ComfyUI"
+        if os.path.exists(comfy_dir):
+            try:
+                subprocess.Popen(
+                    ["python3", "main.py", "--listen", "127.0.0.1", "--port", "8188", "--gpu-only"],
+                    cwd=comfy_dir,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+            except Exception as e:
+                print(f"ComfyUI auto-restart error: {e}")
+
+    await asyncio.sleep(1)
+    comfy_online = video_engine._check_comfyui_online()
+
+    return {
+        "status": "restarted",
+        "message": "ऐप और इंजन सफलतापूर्वक रिस्टार्ट हो गया है।",
+        "comfyui_gpu_connected": comfy_online
     }
 
 

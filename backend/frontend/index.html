@@ -81,7 +81,7 @@
     .header-status {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 14px;
     }
 
     .status-indicator {
@@ -102,6 +102,28 @@
       border-radius: 50%;
       background: var(--accent-green);
       box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    .btn-restart {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-restart:hover {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: #ef4444;
+      color: #fff;
     }
 
     .tabs-bar {
@@ -429,6 +451,9 @@
         <div class="dot" id="gpu-status-dot"></div>
         <span id="gpu-status-text">MiniMax H3 Ref2VA Active (15s Native Max)</span>
       </div>
+      <button class="btn-restart" onclick="restartApp()" title="ऐप और GPU इंजन रीस्टार्ट करें">
+        🔄 रिस्टार्ट ऐप
+      </button>
     </div>
   </header>
 
@@ -574,6 +599,19 @@
       
       document.getElementById(tabId).classList.add('active');
       event.currentTarget.classList.add('active');
+    }
+
+    async function restartApp() {
+      if (confirm('क्या आप वाकई ऐप और GPU इंजन को रिस्टार्ट करना चाहते हैं?')) {
+        try {
+          const res = await fetch(`${API_BASE}/api/system/restart`, { method: 'POST' });
+          const data = await res.json();
+          alert(data.message || 'ऐप सफलतापूर्वक रिस्टार्ट हो गया है!');
+          window.location.reload();
+        } catch (e) {
+          alert('रिस्टार्ट करने में त्रुटि: ' + e.message);
+        }
+      }
     }
 
     async function analyzeStory() {
