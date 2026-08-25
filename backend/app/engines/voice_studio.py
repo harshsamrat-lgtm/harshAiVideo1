@@ -1,21 +1,22 @@
 """
 Voice Studio & Multi-Track Audio Engine.
-Provides consistent character voice cloning, Hindi neural TTS, SFX, and BGM mixing with Audio Ducking.
-Uses standard library wave/math fallback for universal compatibility.
+Synthesizes crystal clear Hindi dialogue using Edge-TTS Neural Voices,
+generates cinematic BGM, and mixes audio with dynamic ducking.
 """
 
 import os
 import math
 import struct
 import wave
+import shutil
 import asyncio
+import subprocess
 from app.models import DialogueModel, CharacterModel
 
 
 class VoiceStudioEngine:
     """
-    Manages persistent voice synthesis per character, Hindi TTS generation,
-    BGM generation, SFX processing, and ducking mixer.
+    Manages Hindi Neural TTS per character, cinematic BGM, and SFX.
     """
 
     def __init__(self, audio_dir: str = "media_store/audio"):
@@ -24,80 +25,68 @@ class VoiceStudioEngine:
 
     async def generate_character_dialogue(self, dialogue: DialogueModel, character: CharacterModel) -> str:
         """
-        Synthesizes crystal clear Hindi dialogue using the character's fixed neural voice profile.
+        Synthesizes crystal clear Hindi dialogue using Microsoft Edge-TTS Neural Hindi Voices.
         """
-        filename = f"dialogue_char_{character.character_id}_{dialogue.character_id}_{abs(hash(dialogue.text)) % 10000}.wav"
+        clean_text = dialogue.text.strip()
+        voice_id = character.voice_profile or ("hi-IN-SwaraNeural" if character.gender == "Female" else "hi-IN-MadhurNeural")
+        
+        filename = f"dialogue_char_{character.character_id}_{abs(hash(clean_text)) % 10000}.mp3"
         output_path = os.path.join(self.audio_dir, filename)
 
-        if not os.path.exists(output_path):
-            voice_id = character.voice_profile or "hi-IN-MadhurNeural"
+        try:
+            import edge_tts
+            communicate = edge_tts.Communicate(
+                text=clean_text,
+                voice=voice_id,
+                rate=character.voice_rate or "+0%",
+                pitch=character.voice_pitch or "+0Hz"
+            )
+            await communicate.save(output_path)
+            print(f"[Voice Studio] ✅ Neural Hindi Dialogue generated ({voice_id}): {output_path}")
+        except Exception as e:
+            print(f"[Voice Studio] Edge-TTS notice: {e}, using gTTS fallback...")
             try:
-                import edge_tts
-                communicate = edge_tts.Communicate(
-                    text=dialogue.text,
-                    voice=voice_id,
-                    rate=character.voice_rate,
-                    pitch=character.voice_pitch
-                )
-                mp3_temp = output_path.replace(".wav", ".mp3")
-                await communicate.save(mp3_temp)
-                
-                # Convert to standard WAV with ffmpeg if available
-                import subprocess
-                res = subprocess.run(
-                    ["ffmpeg", "-y", "-i", mp3_temp, "-ar", "44100", "-ac", "2", output_path],
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                )
-                if res.returncode == 0 and os.path.exists(mp3_temp):
-                    os.remove(mp3_temp)
-                elif os.path.exists(mp3_temp):
-                    output_path = mp3_temp
-            except Exception:
-                # Standard WAV fallback if edge-tts/ffmpeg not yet configured
-                self._generate_tone_wav(output_path, freq=220.0, duration=max(2.0, len(dialogue.text) * 0.12))
+                from gtts import gTTS
+                tts = gTTS(text=clean_text, lang="hi")
+                tts.save(output_path)
+                print(f"[Voice Studio] ✅ gTTS Hindi Dialogue generated: {output_path}")
+            except Exception as g_err:
+                print(f"[Voice Studio] gTTS note: {g_err}")
+                # Wave fallback converted to MP3
+                wav_temp = output_path.replace(".mp3", ".wav")
+                self._generate_tone_wav(wav_temp, freq=220.0, duration=max(3.0, len(clean_text) * 0.15))
+                ffmpeg_bin = shutil.which("ffmpeg")
+                if ffmpeg_bin:
+                    subprocess.run([ffmpeg_bin, "-y", "-i", wav_temp, "-c:a", "libmp3lame", output_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                if os.path.exists(wav_temp):
+                    os.remove(wav_temp)
 
-        dialogue.audio_url = f"/media/audio/{os.path.basename(output_path)}"
+        dialogue.audio_url = f"/media/audio/{filename}"
         return dialogue.audio_url
 
-    def generate_cinematic_bgm(self, mood: str, duration_seconds: int = 10) -> str:
-        """
-        Synthesizes a 10s atmospheric cinematic background score track using standard wave library.
-        """
+    def generate_cinematic_bgm(self, mood: str, duration_seconds: int = 15) -> str:
+        """Synthesizes atmospheric cinematic background score."""
         filename = f"bgm_{mood.replace(' ', '_').lower()}_{duration_seconds}s.wav"
         output_path = os.path.join(self.audio_dir, filename)
 
         if not os.path.exists(output_path):
             freq = 110.0 if "suspense" in mood.lower() else 130.81
-            self._generate_tone_wav(output_path, freq=freq, duration=duration_seconds, volume=0.2)
-
-        return f"/media/audio/{filename}"
-
-    def generate_sfx_track(self, sfx_list: list, duration_seconds: int = 10) -> str:
-        """
-        Synthesizes atmospheric environmental SFX track for the location.
-        """
-        filename = f"sfx_{duration_seconds}s.wav"
-        output_path = os.path.join(self.audio_dir, filename)
-
-        if not os.path.exists(output_path):
-            self._generate_tone_wav(output_path, freq=80.0, duration=duration_seconds, volume=0.08)
+            self._generate_tone_wav(output_path, freq=freq, duration=duration_seconds, volume=0.15)
 
         return f"/media/audio/{filename}"
 
     def _generate_tone_wav(self, filepath: str, freq: float = 440.0, duration: float = 3.0, volume: float = 0.3):
-        """Standard Python wave generator without external library requirements."""
         sample_rate = 44100
         num_samples = int(sample_rate * duration)
 
         with wave.open(filepath, "w") as wav_file:
-            wav_file.setnchannels(1)  # Mono
-            wav_file.setsampwidth(2)  # 16-bit
+            wav_file.setnchannels(1)
+            wav_file.setsampwidth(2)
             wav_file.setframerate(sample_rate)
 
             raw_data = bytearray()
             for i in range(num_samples):
                 t = i / sample_rate
-                # Harmonic chord tone with fade in/out envelope
                 env = math.sin(math.pi * (i / num_samples))
                 sample_val = math.sin(2 * math.pi * freq * t) + 0.5 * math.sin(2 * math.pi * (freq * 1.5) * t)
                 val = int(sample_val * volume * env * 32767.0 * 0.5)

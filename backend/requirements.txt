@@ -4,11 +4,9 @@ pydantic>=2.6.0
 python-multipart>=0.0.9
 pillow>=10.2.0
 requests>=2.31.0
-edge-tts>=6.1.10
-huggingface_hub>=0.23.0
-torch
-torchvision
-torchaudio
-diffusers>=0.30.0
-transformers>=4.40.0
-accelerate>=0.30.0
+edge-tts>=6.1.12
+gtts>=2.5.1
+huggingface_hub>=0.20.0
+tqdm>=4.66.0
+imageio>=2.34.0
+imageio-ffmpeg>=0.5.1
