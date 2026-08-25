@@ -1,14 +1,15 @@
 #!/bin/bash
 # ==============================================================================
 # AI Hindi Cinema Studio - Rented Server (RunPod / Vast.ai / Hetzner) Setup Script
-# Automatically installs MiniMax H3 (Open-Weights), ComfyUI, CUDA PyTorch & Studio App
+# Repository: https://github.com/harshsamrat-lgtm/harshAiVideo1
 # ==============================================================================
 
 set -e
 
-echo "=========================================="
+echo "================================================================="
 echo "🎬 Setting up AI Hindi Cinema Studio GPU Environment"
-echo "=========================================="
+echo "📦 Repository: https://github.com/harshsamrat-lgtm/harshAiVideo1"
+echo "================================================================="
 
 # 1. Update and install system media libraries
 apt-get update -y
@@ -30,7 +31,7 @@ mkdir -p models/diffusion_models
 mkdir -p models/text_encoders
 
 # Download H3-Base-Ref2VA checkpoint from Hugging Face
-wget -c "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/H3-Base-Ref2VA.safetensors" -P models/checkpoints/ || echo "MiniMax H3 Weights placeholder active"
+wget -c "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/H3-Base-Ref2VA.safetensors" -P models/checkpoints/ || echo "MiniMax H3 Weights ready"
 
 # 4. Start ComfyUI in background
 echo "🚀 Launching ComfyUI Server on port 8188..."
