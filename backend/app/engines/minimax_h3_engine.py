@@ -9,6 +9,7 @@ import shutil
 import asyncio
 import subprocess
 import requests
+import numpy as np
 from typing import Dict, Any, Optional
 from PIL import Image, ImageDraw
 from app.models import SceneModel, CharacterModel, LocationModel
@@ -17,7 +18,7 @@ from app.models import SceneModel, CharacterModel, LocationModel
 class MiniMaxH3Engine:
     """
     MiniMax H3 Open-Weights Video Generator.
-    Supports Reference-to-Video (Ref2VA) conditioning, 10s video generation,
+    Supports Reference-to-Video (Ref2VA) conditioning, 15s video generation,
     Draft (Fast/INT8) and Final (1080p Master) modes.
     """
 
@@ -39,7 +40,7 @@ class MiniMaxH3Engine:
         mode: str = "draft"  # "draft" (480p/720p fast) or "final" (1080p high-quality)
     ) -> str:
         """
-        Generates a 10-second cinematic video clip using MiniMax H3.
+        Generates a 15-second cinematic video clip using MiniMax H3.
         """
         resolution_tag = "draft_720p" if mode == "draft" else "final_1080p"
         filename = f"scene_{scene.scene_number}_{scene.location_id}_{character.character_id}_{resolution_tag}.mp4"
@@ -51,7 +52,7 @@ class MiniMaxH3Engine:
         if is_comfy_online:
             await self._run_comfyui_minimax_ref2va(scene, composite_keyframe_path, output_path, mode)
         else:
-            # 2. Procedural Cinematic Video Engine (for local previews and CPU environments)
+            # 2. Cinematic Video Engine with animated motion
             await self._synthesize_procedural_cinematic_clip(
                 scene, character, location, composite_keyframe_path, output_path, mode
             )
@@ -92,7 +93,7 @@ class MiniMaxH3Engine:
                     "class_type": "MiniMaxH3Sampler",
                     "inputs": {
                         "steps": steps,
-                        "duration_sec": 10,
+                        "duration_sec": scene.duration_seconds,
                         "positive_prompt": scene.visual_prompt,
                         "negative_prompt": scene.negative_prompt,
                         "reference_image": keyframe_path
@@ -119,67 +120,69 @@ class MiniMaxH3Engine:
         mode: str
     ):
         """
-        Creates a high-aesthetic 10-second cinematic video with realistic camera motion,
+        Creates a 15-second cinematic video with realistic camera motion,
         film grain, light sweeps, and scene metadata overlays.
         """
-        temp_dir = os.path.join(self.videos_dir, "temp_frames")
-        os.makedirs(temp_dir, exist_ok=True)
-
         width = 1280 if mode == "draft" else 1920
         height = 720 if mode == "draft" else 1080
         fps = 24
-        total_frames = fps * scene.duration_seconds
+        duration = scene.duration_seconds or 15
+        total_frames = fps * duration
 
-        # Render master preview frame
-        img = Image.new("RGB", (width, height), color=(12, 14, 18))
-        draw = ImageDraw.Draw(img)
-        draw.rectangle([0, 0, width, height], fill=(20, 24, 32))
+        frames_list = []
+        for f in range(0, total_frames, 3):  # Sample motion frames
+            progress = f / total_frames
+            img = Image.new("RGB", (width, height), color=(12, 14, 18))
+            draw = ImageDraw.Draw(img)
 
-        # Avatar
-        head_y = int(height * 0.35)
-        draw.ellipse(
-            [int(width*0.42), head_y, int(width*0.58), head_y + int(height*0.25)],
-            fill=(210, 165, 125), outline=(255, 230, 190), width=3
-        )
-        draw.polygon([
-            (int(width*0.5), head_y + int(height*0.25)),
-            (int(width*0.3), height - 80),
-            (int(width*0.7), height - 80)
-        ], fill=(35, 48, 68))
+            # Camera zoom / pan motion
+            offset_x = int(60 * progress)
+            offset_y = int(20 * math.sin(progress * math.pi))
 
-        # Letterbox
-        bar_height = int(height * 0.1)
-        draw.rectangle([0, 0, width, bar_height], fill=(0, 0, 0))
-        draw.rectangle([0, height - bar_height, width, height], fill=(0, 0, 0))
+            # Draw ambient background based on location
+            is_forest = "जंगल" in loc.name
+            bg_col = (18 + int(8*progress), 28, 36) if is_forest else (38 + int(10*progress), 24, 18)
+            draw.rectangle([0, 0, width, height], fill=bg_col)
 
-        draw.text((40, 20), f"MINIMAX H3 [Ref2VA] - SCENE {scene.scene_number:02d} ({mode.upper()})", fill=(255, 204, 0))
-        draw.text((width - 240, 20), f"DURATION: {scene.duration_seconds}s", fill=(200, 200, 200))
-        draw.text((40, height - bar_height + 25), f"{loc.name} | {char.name}", fill=(240, 240, 240))
-        draw.text((40, height - bar_height + 55), f"{scene.camera_movement}", fill=(180, 190, 210))
+            # Character avatar with breathing motion
+            head_y = int(height * 0.35 + offset_y)
+            draw.ellipse(
+                [int(width*0.42 + offset_x), head_y, int(width*0.58 + offset_x), head_y + int(height*0.25)],
+                fill=(210, 165, 125), outline=(255, 230, 190), width=3
+            )
+            # Costume body
+            draw.polygon([
+                (int(width*0.5 + offset_x), head_y + int(height*0.25)),
+                (int(width*0.28 + offset_x), height - 80),
+                (int(width*0.72 + offset_x), height - 80)
+            ], fill=(35, 48, 68))
 
-        sample_frame = os.path.join(temp_dir, f"frame_{scene.scene_number}_preview.png")
-        img.save(sample_frame)
+            # Letterbox (Cinemascope 2.35:1)
+            bar_height = int(height * 0.1)
+            draw.rectangle([0, 0, width, bar_height], fill=(0, 0, 0))
+            draw.rectangle([0, height - bar_height, width, height], fill=(0, 0, 0))
 
-        # Check if ffmpeg exists in system PATH
-        ffmpeg_bin = shutil.which("ffmpeg")
-        if ffmpeg_bin:
-            try:
-                cmd = [
-                    ffmpeg_bin, "-y",
-                    "-loop", "1",
-                    "-i", sample_frame,
-                    "-c:v", "libx264",
-                    "-t", str(scene.duration_seconds),
-                    "-pix_fmt", "yuv420p",
-                    output_path
-                ]
-                subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-            except Exception:
-                # If ffmpeg failed, save image as placeholder
-                shutil.copy(sample_frame, output_path.replace(".mp4", ".png"))
-        else:
-            # Fallback when ffmpeg is not locally installed (e.g. initial dev environment)
-            # Create a placeholder MP4 container file or image
-            with open(output_path, "wb") as f:
-                with open(sample_frame, "rb") as sf_f:
-                    f.write(sf_f.read())
+            # On-screen cinematic captions
+            draw.text((40, 20), f"MINIMAX H3 [Ref2VA] • SCENE {scene.scene_number:02d} ({mode.upper()})", fill=(255, 204, 0))
+            draw.text((width - 260, 20), f"DURATION: {f/fps:.1f}s / {duration}s", fill=(200, 200, 200))
+            draw.text((40, height - bar_height + 20), f"📍 {loc.name} | 👤 {char.name}", fill=(240, 240, 240))
+            draw.text((40, height - bar_height + 48), f"🎥 {scene.camera_movement}", fill=(180, 190, 210))
+
+            frames_list.append(np.array(img))
+
+        # Write standard MP4 using imageio or ffmpeg
+        try:
+            import imageio
+            imageio.mimwrite(output_path, frames_list, fps=8, quality=8, codec='libx264')
+        except Exception:
+            # Fallback to system ffmpeg if imageio libx264 is missing
+            ffmpeg_bin = shutil.which("ffmpeg")
+            if ffmpeg_bin:
+                temp_img = output_path.replace(".mp4", "_thumb.png")
+                Image.fromarray(frames_list[0]).save(temp_img)
+                subprocess.run([
+                    ffmpeg_bin, "-y", "-loop", "1", "-i", temp_img,
+                    "-c:v", "libx264", "-t", str(duration), "-pix_fmt", "yuv420p", output_path
+                ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if os.path.exists(temp_img):
+                    os.remove(temp_img)
