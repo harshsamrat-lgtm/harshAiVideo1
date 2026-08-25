@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Hindi Cinema Studio | Multi-Model Edition (Flux.1 + Wan2.1 + Edge-TTS)</title>
+  <title>AI Hindi Cinema Studio | Multi-Model Edition with AI Video Model Selector</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -75,26 +75,6 @@
     .pill-tts { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
 
     .header-status { display: flex; align-items: center; gap: 14px; }
-
-    .status-indicator {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--text-muted);
-      background: var(--bg-card);
-      padding: 6px 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--accent-green);
-      box-shadow: 0 0 10px var(--accent-green);
-    }
 
     .btn-restart {
       background: rgba(239, 68, 68, 0.15);
@@ -300,8 +280,6 @@
       transition: transform 0.3s;
     }
 
-    .asset-card:hover .asset-img { transform: scale(1.03); }
-
     .asset-badge {
       position: absolute;
       top: 10px;
@@ -426,6 +404,18 @@
       font-size: 14px;
       font-weight: 600;
     }
+
+    .model-selector-box {
+      background: rgba(255, 196, 0, 0.08);
+      border: 1px solid rgba(255, 196, 0, 0.3);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
   </style>
 </head>
 <body>
@@ -436,15 +426,12 @@
       <div class="brand-logo">🎬 AI HINDI CINEMA STUDIO</div>
       <div class="model-pills">
         <span class="pill pill-flux">Flux.1 4K Art</span>
-        <span class="pill pill-wan">Wan2.1 / MiniMax 15s Video</span>
+        <span class="pill pill-wan">Wan2.1 (14B/1.3B)</span>
+        <span class="pill pill-flux">MiniMax H3 Ref2VA</span>
         <span class="pill pill-tts">Neural Hindi TTS</span>
       </div>
     </div>
     <div class="header-status">
-      <div class="status-indicator">
-        <div class="dot"></div>
-        <span>Multi-Model AI Suite Active</span>
-      </div>
       <button class="btn-restart" onclick="restartApp()" title="ऐप रिस्टार्ट करें">
         🔄 रिस्टार्ट ऐप
       </button>
@@ -465,7 +452,7 @@
     <!-- Progress Indicator Banner -->
     <div id="progress-banner" class="progress-banner">
       <span class="loader"></span>
-      <span id="progress-text">AI मॉडल्स द्वारा 4K तस्वीरें और आवाज बनाई जा रही हैं...</span>
+      <span id="progress-text">AI मॉडल्स द्वारा कार्य किया जा रहा है...</span>
     </div>
 
     <!-- TAB 1: Story Input -->
@@ -473,7 +460,7 @@
       <div class="glass-card">
         <div class="card-title">
           <span>हिंदी कहानी इनपुट एवं AI स्क्रीनप्ले डायरेक्टर</span>
-          <span class="badge">Flux.1 + Gemini + Wan2.1 Engine</span>
+          <span class="badge">Multi-Model Cinema Engine</span>
         </div>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
@@ -492,7 +479,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label>प्रति सीन अवधि (Max Scene Duration)</label>
+            <label>प्रति सीन अवधि (Scene Duration)</label>
             <select id="scene-duration">
               <option value="15" selected>15 सेकंड (Wan2.1 / MiniMax Native Max)</option>
               <option value="10">10 सेकंड (Standard Cut)</option>
@@ -541,16 +528,34 @@
       </div>
     </div>
 
-    <!-- TAB 4: 15s Scene Storyboard -->
+    <!-- TAB 4: 15s Scene Storyboard with Video Model Selector -->
     <div id="tab-scenes" class="tab-content">
       <div class="glass-card">
+        
+        <!-- Video Model Selection Bar -->
+        <div class="model-selector-box">
+          <div>
+            <label style="color:var(--gold-primary); margin-bottom:4px; font-size:14px;">🎥 वीडियो बनाने के लिए AI मॉडल चुनें (Choose AI Video Model):</label>
+            <div style="font-size:12px; color:var(--text-muted);">आप अपनी पसंद के अनुसार वीडियो मॉडल चुनकर रेंडर कर सकते हैं।</div>
+          </div>
+          <div style="min-width: 380px;">
+            <select id="selected-video-model" style="background:#0a0c10; font-weight:700; color:var(--gold-primary); border-color:var(--gold-primary);">
+              <option value="wan2_1_14b" selected>🌟 Wan2.1-14B (Alibaba Flagship - 1080p Cinema Master ~28GB)</option>
+              <option value="minimax_h3">🎬 MiniMax H3 (Hailuo 3.0 - 15s Ref2VA Checkpoint ~18.5GB)</option>
+              <option value="wan2_1_1_3b">⚡ Wan2.1-1.3B (Ultra-Fast 720p Diffusion ~3.2GB)</option>
+              <option value="svd_xt">🚀 Stable Video Diffusion XT (Native PyTorch CUDA GPU)</option>
+              <option value="cloud_diffusion">🌐 Cloud Neural Video Diffusion (Instant Zero-Wait)</option>
+            </select>
+          </div>
+        </div>
+
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <div>
             <div class="card-title" style="margin-bottom: 4px;">15-सेकंड सीन स्टोरीबोर्ड (Real Composite Keyframes)</div>
-            <p style="color: var(--text-muted); font-size: 13px;">Wan2.1 / MiniMax 15s डिफ्यूजन के लिए तैयार की-फ्रेम्स और डायलॉग्स।</p>
+            <p style="color: var(--text-muted); font-size: 13px;">चुने गए मॉडल द्वारा 15-सेकंड की AI वीडियो क्लिप्स रेंडर करें।</p>
           </div>
           <button class="btn btn-gold" onclick="generateDraftMovie()">
-            <span>⚡ ड्राफ्ट मूवी रेंडर करें (Generate 15s Video)</span>
+            <span>⚡ ड्राफ्ट मूवी रेंडर करें (Generate 15s Movie)</span>
           </button>
         </div>
         <div id="scenes-timeline"></div>
@@ -573,7 +578,7 @@
           <div class="stage-controls">
             <div>
               <div style="font-weight: 700; font-size: 16px;" id="player-movie-title">गाँव का रहस्यमयी अंधेरा</div>
-              <div style="font-size: 12px; color: var(--text-muted);" id="player-movie-meta">Flux.1 + Wan2.1 + Edge-TTS Multi-Track Master</div>
+              <div style="font-size: 12px; color: var(--text-muted);" id="player-movie-meta">Multi-Model AI Cinema Master</div>
             </div>
             <div style="display: flex; gap: 12px;">
               <a class="btn btn-secondary" id="btn-download-srt" href="#" download="subtitles.srt" style="display: none;">
@@ -644,8 +649,7 @@
         pText.innerText = '✅ सभी 4K तस्वीरें, 360° चेहरे और आवाज तैयार हैं!';
         setTimeout(() => { pBanner.style.display = 'none'; }, 3000);
         
-        // Switch to Locations tab to see real AI art
-        document.querySelectorAll('.tab-btn')[1].click();
+        document.querySelectorAll('.tab-btn')[3].click();
       } catch (err) {
         alert('विश्लेषण त्रुटि: ' + err.message);
         pBanner.style.display = 'none';
@@ -747,13 +751,14 @@
         return;
       }
 
+      const chosenModel = document.getElementById('selected-video-model').value;
       const pBanner = document.getElementById('progress-banner');
       const pText = document.getElementById('progress-text');
       pBanner.style.display = 'flex';
-      pText.innerText = '🎬 [Wan2.1 / MiniMax Engine] 15s AI वीडियो क्लिप्स व मूवी बनाई जा रही है...';
+      pText.innerText = `🎬 [${chosenModel.toUpperCase()}] 15s AI वीडियो क्लिप्स व मूवी बनाई जा रही है...`;
 
       try {
-        const res = await fetch(`${API_BASE}/api/render/draft/${currentProject.project_id}`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/api/render/draft/${currentProject.project_id}?video_model=${chosenModel}`, { method: 'POST' });
         currentProject = await res.json();
         renderProjectAssets();
 
@@ -782,11 +787,12 @@
 
     async function regenerateScene(sceneNumber) {
       const customPrompt = prompt('इस सीन के लिए नया प्रॉम्प्ट दर्ज करें (या खाली छोड़ें):');
+      const chosenModel = document.getElementById('selected-video-model').value;
       try {
-        const res = await fetch(`${API_BASE}/api/scene/${currentProject.project_id}/regenerate/${sceneNumber}?custom_prompt=${encodeURIComponent(customPrompt || '')}`, {
+        const res = await fetch(`${API_BASE}/api/scene/${currentProject.project_id}/regenerate/${sceneNumber}?custom_prompt=${encodeURIComponent(customPrompt || '')}&video_model=${chosenModel}`, {
           method: 'POST'
         });
-        alert(`सीन ${sceneNumber} सफलतापूर्वक री-जनरेट हो गया!`);
+        alert(`सीन ${sceneNumber} [${chosenModel}] द्वारा सफलतापूर्वक री-जनरेट हो गया!`);
         const pRes = await fetch(`${API_BASE}/api/project/${currentProject.project_id}`);
         currentProject = await pRes.json();
         renderProjectAssets();
@@ -797,12 +803,13 @@
 
     async function approveFinalMovie() {
       if (!currentProject) return;
+      const chosenModel = document.getElementById('selected-video-model').value;
       const btn = document.getElementById('btn-approve-final');
       btn.innerHTML = '<span class="loader"></span> 1080p रेंडरिंग जारी है...';
       btn.disabled = true;
 
       try {
-        const res = await fetch(`${API_BASE}/api/render/approve-final/${currentProject.project_id}`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/api/render/approve-final/${currentProject.project_id}?video_model=${chosenModel}`, { method: 'POST' });
         currentProject = await res.json();
 
         if (currentProject.full_final_movie_url) {
@@ -810,7 +817,7 @@
           player.src = currentProject.full_final_movie_url;
           player.load();
 
-          document.getElementById('movie-quality-badge').innerText = '1080p Full HD Master (Approved)';
+          document.getElementById('movie-quality-badge').innerText = `1080p Full HD Master [${chosenModel.toUpperCase()}]`;
           document.getElementById('movie-quality-badge').style.background = 'rgba(16, 185, 129, 0.2)';
           document.getElementById('movie-quality-badge').style.color = '#10b981';
           
