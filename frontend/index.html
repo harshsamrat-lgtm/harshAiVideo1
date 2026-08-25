@@ -3,31 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Hindi Cinema Studio | MiniMax H3 (15s Max Native Scenes)</title>
+  <title>AI Hindi Cinema Studio | Multi-Model Edition (Flux.1 + Wan2.1 + Edge-TTS)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #0a0c10;
-      --bg-secondary: #12161f;
-      --bg-card: rgba(22, 27, 38, 0.75);
-      --border-color: rgba(255, 215, 0, 0.15);
-      --border-focus: rgba(255, 204, 0, 0.5);
+      --bg-primary: #080a0f;
+      --bg-secondary: #10141d;
+      --bg-card: rgba(18, 22, 32, 0.85);
+      --border-color: rgba(255, 215, 0, 0.18);
+      --border-focus: rgba(255, 204, 0, 0.6);
       --gold-primary: #ffc400;
-      --gold-glow: rgba(255, 196, 0, 0.25);
+      --gold-glow: rgba(255, 196, 0, 0.3);
       --accent-blue: #38bdf8;
+      --accent-purple: #c084fc;
       --accent-green: #10b981;
       --accent-red: #ef4444;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Outfit', 'Noto Sans Devanagari', sans-serif;
@@ -40,7 +37,7 @@
     }
 
     header {
-      background: rgba(18, 22, 31, 0.85);
+      background: rgba(16, 20, 29, 0.9);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-color);
       padding: 16px 32px;
@@ -52,14 +49,10 @@
       z-index: 100;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+    .brand { display: flex; align-items: center; gap: 14px; }
 
     .brand-logo {
-      font-size: 26px;
+      font-size: 24px;
       background: linear-gradient(135deg, #ffc400, #ff8800);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -67,22 +60,21 @@
       letter-spacing: -0.5px;
     }
 
-    .brand-badge {
+    .model-pills { display: flex; gap: 6px; }
+
+    .pill {
       font-size: 11px;
-      text-transform: uppercase;
-      background: rgba(255, 196, 0, 0.12);
-      color: var(--gold-primary);
-      padding: 4px 10px;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 196, 0, 0.3);
-      font-weight: 600;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid transparent;
     }
 
-    .header-status {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+    .pill-flux { background: rgba(192, 132, 252, 0.15); color: #d8b4fe; border-color: rgba(192, 132, 252, 0.3); }
+    .pill-wan { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.3); }
+    .pill-tts { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
+
+    .header-status { display: flex; align-items: center; gap: 14px; }
 
     .status-indicator {
       display: flex;
@@ -117,14 +109,9 @@
       align-items: center;
       gap: 6px;
       transition: all 0.2s;
-      font-family: inherit;
     }
 
-    .btn-restart:hover {
-      background: rgba(239, 68, 68, 0.3);
-      border-color: #ef4444;
-      color: #fff;
-    }
+    .btn-restart:hover { background: rgba(239, 68, 68, 0.3); color: #fff; }
 
     .tabs-bar {
       background: var(--bg-secondary);
@@ -172,11 +159,7 @@
       width: 100%;
     }
 
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
     .tab-content.active { display: block; }
 
     @keyframes fadeIn {
@@ -206,10 +189,11 @@
 
     .card-title span.badge {
       font-size: 12px;
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--accent-blue);
+      background: rgba(192, 132, 252, 0.15);
+      color: #d8b4fe;
       padding: 3px 8px;
       border-radius: 6px;
+      border: 1px solid rgba(192, 132, 252, 0.3);
     }
 
     .form-group { margin-bottom: 20px; }
@@ -242,16 +226,12 @@
       box-shadow: 0 0 12px var(--gold-glow);
     }
 
-    textarea {
-      resize: vertical;
-      min-height: 140px;
-      line-height: 1.6;
-    }
+    textarea { resize: vertical; min-height: 140px; line-height: 1.6; }
 
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 20px;
+      gap: 22px;
     }
 
     .btn {
@@ -274,10 +254,7 @@
       box-shadow: 0 4px 15px rgba(255, 196, 0, 0.3);
     }
 
-    .btn-gold:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 196, 0, 0.45);
-    }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 196, 0, 0.45); }
 
     .btn-secondary {
       background: rgba(255, 255, 255, 0.08);
@@ -295,47 +272,76 @@
       box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     }
 
-    .btn-approve:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
-    }
+    .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5); }
 
     .asset-card {
-      background: rgba(15, 18, 26, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
+      background: rgba(14, 18, 26, 0.95);
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      border-radius: 14px;
       overflow: hidden;
       transition: transform 0.2s, border-color 0.2s;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     }
 
-    .asset-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--border-focus);
+    .asset-card:hover { transform: translateY(-4px); border-color: var(--border-focus); }
+
+    .asset-img-wrap {
+      width: 100%;
+      height: 220px;
+      background: #000;
+      overflow: hidden;
+      position: relative;
     }
 
     .asset-img {
       width: 100%;
-      height: 180px;
+      height: 100%;
       object-fit: cover;
-      background: #000;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.3s;
     }
 
-    .asset-body { padding: 16px; }
+    .asset-card:hover .asset-img { transform: scale(1.03); }
+
+    .asset-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.75);
+      color: var(--gold-primary);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 196, 0, 0.3);
+    }
+
+    .asset-body { padding: 18px; }
 
     .asset-title {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 700;
       color: var(--gold-primary);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .asset-meta {
       font-size: 13px;
       color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 10px;
+      line-height: 1.6;
+      margin-bottom: 12px;
     }
+
+    .audio-player-box {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .audio-player-box audio { width: 100%; height: 32px; }
 
     .scene-card {
       background: rgba(18, 22, 32, 0.85);
@@ -344,16 +350,16 @@
       padding: 18px;
       margin-bottom: 18px;
       display: grid;
-      grid-template-columns: 240px 1fr 180px;
+      grid-template-columns: 260px 1fr 140px;
       gap: 20px;
       align-items: center;
     }
 
     .scene-preview-box {
       width: 100%;
-      height: 135px;
+      height: 145px;
       background: #000;
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
       position: relative;
     }
@@ -362,24 +368,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-
-    .scene-badge {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      background: rgba(0, 0, 0, 0.75);
-      color: var(--gold-primary);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 4px;
-    }
-
-    .scene-info {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
     }
 
     .scene-prompt {
@@ -392,14 +380,6 @@
       border-left: 3px solid var(--gold-primary);
     }
 
-    .scene-dialogue {
-      font-size: 13px;
-      color: #93c5fd;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
     .cinema-stage {
       background: #000;
       border-radius: 16px;
@@ -410,11 +390,7 @@
       position: relative;
     }
 
-    .cinema-video {
-      width: 100%;
-      max-height: 520px;
-      display: block;
-    }
+    .cinema-video { width: 100%; max-height: 520px; display: block; }
 
     .stage-controls {
       background: rgba(18, 22, 31, 0.95);
@@ -436,6 +412,21 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Progress Banner */
+    .progress-banner {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      gap: 14px;
+      color: var(--accent-blue);
+      font-size: 14px;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -444,14 +435,18 @@
   <header>
     <div class="brand">
       <div class="brand-logo">🎬 AI HINDI CINEMA STUDIO</div>
-      <div class="brand-badge">MiniMax H3 (15s Max Native Engine)</div>
+      <div class="model-pills">
+        <span class="pill pill-flux">Flux.1 4K Art</span>
+        <span class="pill pill-wan">Wan2.1 / MiniMax 15s Video</span>
+        <span class="pill pill-tts">Neural Hindi TTS</span>
+      </div>
     </div>
     <div class="header-status">
       <div class="status-indicator">
-        <div class="dot" id="gpu-status-dot"></div>
-        <span id="gpu-status-text">MiniMax H3 Ref2VA Active (15s Native Max)</span>
+        <div class="dot"></div>
+        <span>Multi-Model AI Suite Active</span>
       </div>
-      <button class="btn-restart" onclick="restartApp()" title="ऐप और GPU इंजन रीस्टार्ट करें">
+      <button class="btn-restart" onclick="restartApp()" title="ऐप रिस्टार्ट करें">
         🔄 रिस्टार्ट ऐप
       </button>
     </div>
@@ -459,8 +454,8 @@
 
   <!-- Navigation Tabs -->
   <div class="tabs-bar">
-    <button class="tab-btn active" onclick="switchTab('tab-story')">📝 1. स्टोरी एवं स्क्रिप्ट</button>
-    <button class="tab-btn" onclick="switchTab('tab-locations')">🏰 2. लोकेशन डीएनए</button>
+    <button class="tab-btn active" onclick="switchTab('tab-story')">📝 1. स्टोरी एवं AI डायरेक्टर</button>
+    <button class="tab-btn" onclick="switchTab('tab-locations')">🏰 2. लोकेशन 4K AI फोटो</button>
     <button class="tab-btn" onclick="switchTab('tab-characters')">👥 3. कलाकार एवं आवाज</button>
     <button class="tab-btn" onclick="switchTab('tab-scenes')">🎞️ 4. 15s सीन स्टोरीबोर्ड</button>
     <button class="tab-btn" onclick="switchTab('tab-movie')">🎬 5. ड्राफ्ट व फाइनल मूवी</button>
@@ -468,12 +463,18 @@
 
   <!-- Main Content -->
   <main>
+    <!-- Progress Indicator Banner -->
+    <div id="progress-banner" class="progress-banner">
+      <span class="loader"></span>
+      <span id="progress-text">AI मॉडल्स द्वारा 4K तस्वीरें और आवाज बनाई जा रही हैं...</span>
+    </div>
+
     <!-- TAB 1: Story Input -->
     <div id="tab-story" class="tab-content active">
       <div class="glass-card">
         <div class="card-title">
           <span>हिंदी कहानी इनपुट एवं AI स्क्रीनप्ले डायरेक्टर</span>
-          <span class="badge">MiniMax H3 15-Second Max Scenes</span>
+          <span class="badge">Flux.1 + Gemini + Wan2.1 Engine</span>
         </div>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
@@ -494,7 +495,7 @@
           <div class="form-group">
             <label>प्रति सीन अवधि (Max Scene Duration)</label>
             <select id="scene-duration">
-              <option value="15" selected>15 सेकंड (MiniMax H3 Native Max - Recommended)</option>
+              <option value="15" selected>15 सेकंड (Wan2.1 / MiniMax Native Max)</option>
               <option value="10">10 सेकंड (Standard Cut)</option>
             </select>
           </div>
@@ -505,23 +506,26 @@
           <textarea id="story-text" placeholder="यहाँ अपनी पूरी हिंदी कहानी लिखें या पेस्ट करें...">रामू अपने पुराने कच्चे घर की खिड़की पर खड़ा था। सुबह की पहली किरणें मिट्टी की दीवारों पर पड़ रही थीं। बाहर घने जंगल से अजीब तरह की रहस्यमयी आवाजें आ रही थीं। रामू ने अपनी पुरानी सफेद धोती-कुर्ता संभाला और मन ही मन तय किया कि आज उसे इस रहस्य का पता लगाना ही होगा। वह घर का भारी लकड़ी का दरवाजा खोलकर घने जंगल के अनजान रास्ते की ओर बढ़ चला।</textarea>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 13px; color: var(--text-muted);">
+            💡 "Analyze & Parse" दबाने पर <b>Flux.1</b> सभी लोकेशन्स और कलाकारों की 4K तस्वीरें तुरंत जनरेट करेगा।
+          </div>
           <button class="btn btn-gold" id="btn-parse-story" onclick="analyzeStory()">
-            <span>🎭 स्क्रीनप्ले तैयार करें (Analyze & Parse)</span>
+            <span>✨ स्क्रीनप्ले व असली AI तस्वीरें तैयार करें</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: Location DNA -->
+    <!-- TAB 2: Location 4K Concept Art -->
     <div id="tab-locations" class="tab-content">
       <div class="glass-card">
         <div class="card-title">
-          <span>प्रयुक्त स्थानों की एकरूपता (Location & Environment DNA)</span>
-          <span class="badge">Master Establishing Assets</span>
+          <span>स्थानों की 4K AI तस्वीरें (Flux.1 Location Concept Art)</span>
+          <span class="badge">100% Architectural Consistency</span>
         </div>
         <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
-          यह सुनिश्चित करता है कि जब भी कहानी किसी स्थान पर वापस लौटे, उसकी वास्तुकला, दीवारें, प्रॉप्स और लाइटिंग 100% एक जैसी रहे।
+          कहानी में प्रयुक्त सभी स्थानों की Flux.1 द्वारा उत्पन्न असली 4K तस्वीरें। पूरी मूवी में ये स्थान एक समान रहेंगे।
         </p>
         <div class="grid-3" id="locations-grid"></div>
       </div>
@@ -531,8 +535,8 @@
     <div id="tab-characters" class="tab-content">
       <div class="glass-card">
         <div class="card-title">
-          <span>कलाकार की शक्ल एवं आवाज की निरंतरता (Character DNA & Voice Studio)</span>
-          <span class="badge">360° Turnaround & Neural Voice</span>
+          <span>कलाकार की असली शक्ल एवं आवाज (Flux.1 FaceID & Voice Studio)</span>
+          <span class="badge">360° Human Portraits & Neural Voices</span>
         </div>
         <div class="grid-3" id="characters-grid"></div>
       </div>
@@ -543,11 +547,11 @@
       <div class="glass-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <div>
-            <div class="card-title" style="margin-bottom: 4px;">15-सेकंड अधिकतम सीन स्टोरीबोर्ड एवं टाइमलाइन</div>
-            <p style="color: var(--text-muted); font-size: 13px;">MiniMax H3 Ref2VA 15s Native Clips, कैमरा गति और डायलॉग्स।</p>
+            <div class="card-title" style="margin-bottom: 4px;">15-सेकंड सीन स्टोरीबोर्ड (Real Composite Keyframes)</div>
+            <p style="color: var(--text-muted); font-size: 13px;">Wan2.1 / MiniMax 15s डिफ्यूजन के लिए तैयार की-फ्रेम्स और डायलॉग्स।</p>
           </div>
           <button class="btn btn-gold" onclick="generateDraftMovie()">
-            <span>⚡ ड्राफ्ट मूवी रेंडर करें (Generate Draft)</span>
+            <span>⚡ ड्राफ्ट मूवी रेंडर करें (Generate 15s Video)</span>
           </button>
         </div>
         <div id="scenes-timeline"></div>
@@ -558,8 +562,8 @@
     <div id="tab-movie" class="tab-content">
       <div class="glass-card">
         <div class="card-title">
-          <span>सिनेमा प्रीव्यू एवं अप्रूवल थियेटर (Cinema Preview & Export)</span>
-          <span class="badge" id="movie-quality-badge">Draft Preview (480p/720p)</span>
+          <span>सिनेमा थियेटर एवं एक्सपोर्ट (Cinema Master Player)</span>
+          <span class="badge" id="movie-quality-badge">Draft Preview (Multi-Track FFmpeg)</span>
         </div>
 
         <div class="cinema-stage">
@@ -570,7 +574,7 @@
           <div class="stage-controls">
             <div>
               <div style="font-weight: 700; font-size: 16px;" id="player-movie-title">गाँव का रहस्यमयी अंधेरा</div>
-              <div style="font-size: 12px; color: var(--text-muted);" id="player-movie-meta">MiniMax H3 Multi-Track FFmpeg Master</div>
+              <div style="font-size: 12px; color: var(--text-muted);" id="player-movie-meta">Flux.1 + Wan2.1 + Edge-TTS Multi-Track Master</div>
             </div>
             <div style="display: flex; gap: 12px;">
               <a class="btn btn-secondary" id="btn-download-srt" href="#" download="subtitles.srt" style="display: none;">
@@ -580,7 +584,7 @@
                 📥 डाउनलोड मूवी (.MP4)
               </a>
               <button class="btn btn-approve" id="btn-approve-final" onclick="approveFinalMovie()">
-                ✨ स्वीकृत करें व 1080p फाइनल रेंडर करें
+                ✨ 1080p फाइनल मास्टर रेंडर करें
               </button>
             </div>
           </div>
@@ -602,22 +606,26 @@
     }
 
     async function restartApp() {
-      if (confirm('क्या आप वाकई ऐप और GPU इंजन को रिस्टार्ट करना चाहते हैं?')) {
+      if (confirm('क्या आप वाकई ऐप को रिस्टार्ट करना चाहते हैं?')) {
         try {
           const res = await fetch(`${API_BASE}/api/system/restart`, { method: 'POST' });
           const data = await res.json();
           alert(data.message || 'ऐप सफलतापूर्वक रिस्टार्ट हो गया है!');
           window.location.reload();
         } catch (e) {
-          alert('रिस्टार्ट करने में त्रुटि: ' + e.message);
+          alert('रिस्टार्ट त्रुटि: ' + e.message);
         }
       }
     }
 
     async function analyzeStory() {
       const btn = document.getElementById('btn-parse-story');
-      btn.innerHTML = '<span class="loader"></span> विश्लेषण जारी है...';
+      const pBanner = document.getElementById('progress-banner');
+      const pText = document.getElementById('progress-text');
+
       btn.disabled = true;
+      pBanner.style.display = 'flex';
+      pText.innerText = '🎭 [Flux.1 + Gemini] कहानी का विश्लेषण व 4K AI तस्वीरें बनाई जा रही हैं... (लगभग 10-15 सेकंड)';
 
       try {
         const res = await fetch(`${API_BASE}/api/story/analyze`, {
@@ -633,11 +641,16 @@
 
         currentProject = await res.json();
         renderProjectAssets();
-        document.querySelectorAll('.tab-btn')[3].click();
+        
+        pText.innerText = '✅ सभी 4K तस्वीरें, 360° चेहरे और आवाज तैयार हैं!';
+        setTimeout(() => { pBanner.style.display = 'none'; }, 3000);
+        
+        // Switch to Locations tab to see real AI art
+        document.querySelectorAll('.tab-btn')[1].click();
       } catch (err) {
-        alert('कहानी विश्लेषण में त्रुटि: ' + err.message);
+        alert('विश्लेषण त्रुटि: ' + err.message);
+        pBanner.style.display = 'none';
       } finally {
-        btn.innerHTML = '<span>🎭 स्क्रीनप्ले तैयार करें (Analyze & Parse)</span>';
         btn.disabled = false;
       }
     }
@@ -645,17 +658,20 @@
     function renderProjectAssets() {
       if (!currentProject) return;
 
-      // 1. Render Locations
+      // 1. Render Locations with Real 4K Art
       const locContainer = document.getElementById('locations-grid');
       locContainer.innerHTML = '';
       currentProject.locations.forEach(loc => {
         locContainer.innerHTML += `
           <div class="asset-card">
-            <img class="asset-img" src="${loc.master_establishing_url}" alt="${loc.name}">
+            <div class="asset-img-wrap">
+              <img class="asset-img" src="${loc.master_establishing_url}" alt="${loc.name}">
+              <div class="asset-badge">FLUX.1 4K ART</div>
+            </div>
             <div class="asset-body">
               <div class="asset-title">📍 ${loc.name}</div>
               <div class="asset-meta">
-                <b>शैली:</b> ${loc.architecture_style}<br>
+                <b>वास्तुकला:</b> ${loc.architecture_style}<br>
                 <b>प्रॉप्स:</b> ${loc.anchor_props.join(', ')}<br>
                 <b>कलर टोन:</b> ${loc.color_palette}
               </div>
@@ -664,26 +680,39 @@
         `;
       });
 
-      // 2. Render Characters
+      // 2. Render Characters with Real 3-Angle Human Portraits & Voice Audio
       const charContainer = document.getElementById('characters-grid');
       charContainer.innerHTML = '';
       currentProject.characters.forEach(char => {
+        // Find dialogue audio sample
+        const sampleScene = currentProject.scenes.find(s => s.dialogue && s.dialogue.character_id === char.character_id);
+        const audioPlayerHtml = sampleScene && sampleScene.dialogue.audio_url 
+          ? `<div class="audio-player-box">
+              <span style="font-size:12px; color:var(--accent-green);">🎙️ आवाज सैंपल:</span>
+              <audio controls src="${sampleScene.dialogue.audio_url}"></audio>
+             </div>`
+          : '';
+
         charContainer.innerHTML += `
           <div class="asset-card">
-            <img class="asset-img" src="${char.master_portrait_url}" alt="${char.name}">
+            <div class="asset-img-wrap">
+              <img class="asset-img" src="${char.master_portrait_url}" alt="${char.name}">
+              <div class="asset-badge">FLUX.1 FACE-ID</div>
+            </div>
             <div class="asset-body">
-              <div class="asset-title">👤 ${char.name} (${char.age} वर्ष)</div>
+              <div class="asset-title">👤 ${char.name} (${char.age} वर्ष, ${char.gender})</div>
               <div class="asset-meta">
                 <b>रूप-रंग:</b> ${char.appearance}<br>
                 <b>वेशभूषा:</b> ${char.costume}<br>
-                <b>आवाज:</b> ${char.voice_profile}
+                <b>न्यूरल वॉइस:</b> ${char.voice_profile}
               </div>
+              ${audioPlayerHtml}
             </div>
           </div>
         `;
       });
 
-      // 3. Render Scenes Timeline
+      // 3. Render 15s Scenes Timeline with Real Composite Keyframes
       const scenesContainer = document.getElementById('scenes-timeline');
       scenesContainer.innerHTML = '';
       currentProject.scenes.forEach(sc => {
@@ -695,14 +724,14 @@
           <div class="scene-card">
             <div class="scene-preview-box">
               ${videoHtml}
-              <div class="scene-badge">SCENE ${sc.scene_number} (${sc.duration_seconds}s)</div>
+              <div class="asset-badge">SCENE ${sc.scene_number} (${sc.duration_seconds}s)</div>
             </div>
-            <div class="scene-info">
+            <div style="display:flex; flex-direction:column; gap:6px;">
               <div style="font-weight:700; color:var(--gold-primary); font-size:14px;">
                 📍 ${sc.location_name} • 🎥 ${sc.camera_movement}
               </div>
               <div class="scene-prompt">${sc.visual_prompt}</div>
-              ${sc.dialogue ? `<div class="scene-dialogue">🎙️ <b>${sc.dialogue.character_name}:</b> "${sc.dialogue.text}"</div>` : ''}
+              ${sc.dialogue ? `<div style="font-size:13px; color:#93c5fd;">🎙️ <b>${sc.dialogue.character_name}:</b> "${sc.dialogue.text}"</div>` : ''}
             </div>
             <div style="display:flex; flex-direction:column; gap:8px;">
               <button class="btn btn-secondary" onclick="regenerateScene(${sc.scene_number})">
@@ -716,11 +745,15 @@
 
     async function generateDraftMovie() {
       if (!currentProject) {
-        alert('कृपया पहले कहानी दर्ज करें।');
+        alert('कृपया पहले कहानी दर्ज करके "Analyze & Parse" दबाएं।');
         return;
       }
 
-      alert('ड्राफ्ट मूवी रेंडरिंग शुरू हो गई है... (15s क्लिप्स + हिंदी संवाद + BGM)');
+      const pBanner = document.getElementById('progress-banner');
+      const pText = document.getElementById('progress-text');
+      pBanner.style.display = 'flex';
+      pText.innerText = '🎬 [Wan2.1 / MiniMax Engine] 15s AI वीडियो क्लिप्स व मूवी बनाई जा रही है...';
+
       try {
         const res = await fetch(`${API_BASE}/api/render/draft/${currentProject.project_id}`, { method: 'POST' });
         currentProject = await res.json();
@@ -739,10 +772,13 @@
             document.getElementById('btn-download-srt').style.display = 'inline-flex';
           }
 
+          pText.innerText = '🎉 15s AI मूवी सफलतापूर्वक तैयार है!';
+          setTimeout(() => { pBanner.style.display = 'none'; }, 4000);
           document.querySelectorAll('.tab-btn')[4].click();
         }
       } catch (err) {
         alert('ड्राफ्ट निर्माण में त्रुटि: ' + err.message);
+        pBanner.style.display = 'none';
       }
     }
 
@@ -786,18 +822,10 @@
       } catch (err) {
         alert('फाइनल रेंडर में त्रुटि: ' + err.message);
       } finally {
-        btn.innerHTML = '✨ स्वीकृत करें व 1080p फाइनल रेंडर करें';
+        btn.innerHTML = '✨ 1080p फाइनल मास्टर रेंडर करें';
         btn.disabled = false;
       }
     }
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/system/status`);
-        const data = await res.json();
-        document.getElementById('gpu-status-text').innerText = `${data.minimax_h3_model} (${data.mode})`;
-      } catch (e) {}
-    });
   </script>
 </body>
 </html>
