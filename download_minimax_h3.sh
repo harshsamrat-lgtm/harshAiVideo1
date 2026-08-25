@@ -1,21 +1,15 @@
 #!/bin/bash
 # ==============================================================================
-# AI Hindi Cinema Studio - MiniMax H3 Model Downloader & ComfyUI Starter
+# AI Hindi Cinema Studio - Fast Single 20GB MiniMax H3 Downloader & ComfyUI Starter
 # ==============================================================================
 
 set -e
 
 echo "================================================================="
-echo "📥 Setting up MiniMax H3 (Hailuo 3.0) on GPU Server"
+echo "📥 Setting up MiniMax H3 (Single ~20GB File Only)"
 echo "================================================================="
 
-# 1. Install dependencies
-apt-get update -y || true
-apt-get install -y ffmpeg git curl wget python3-pip || true
-
-pip install huggingface_hub requests tqdm || true
-
-# 2. Setup ComfyUI if not already present
+# 1. Setup ComfyUI if not already present
 if [ ! -d "ComfyUI" ]; then
     echo "📦 Cloning ComfyUI repository..."
     git clone https://github.com/comfyanonymous/ComfyUI.git
@@ -25,11 +19,12 @@ cd ComfyUI
 pip install -r requirements.txt || true
 cd ..
 
-# 3. Run Python Downloader to fetch exact MiniMax H3 Safetensors
-echo "📥 Running Python Hugging Face Downloader..."
+pip install huggingface_hub requests tqdm || true
+
+# 2. Run Targeted 20GB Downloader
 python3 download_models.py
 
-# 4. Start ComfyUI Server on Port 8188 in Background
+# 3. Start ComfyUI Server on Port 8188 in Background
 echo "================================================================="
 echo "🚀 Launching ComfyUI GPU Server on port 8188..."
 echo "================================================================="
