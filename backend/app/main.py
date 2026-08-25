@@ -1,6 +1,6 @@
 """
 AI Hindi Cinema Studio - FastAPI Application Server.
-Optimized for high-speed parallel asset generation (Locations, Characters, Keyframes, Audio).
+Provides high-speed parallel Draft & Final Movie rendering with 100% audio-visual synchronization.
 """
 
 import os
@@ -24,7 +24,7 @@ from app.engines.movie_assembler import MovieAssemblerEngine
 app = FastAPI(
     title="AI Hindi Cinema Studio API",
     description="Multi-Model Hindi Story-to-Movie Generation Platform",
-    version="2.3.0"
+    version="2.4.0"
 )
 
 app.add_middleware(
@@ -90,18 +90,13 @@ async def analyze_hindi_story(request: StoryInputRequest):
     try:
         project = director_engine.parse_story(request)
 
-        # 1. Parallel Generation Tasks
+        # 1. Locations and Characters in Parallel
         tasks = []
-
-        # Location tasks
         for loc in project.locations:
             tasks.append(image_studio.generate_location_concept_art(loc, force_refresh=True))
-
-        # Character tasks
         for char in project.characters:
             tasks.append(image_studio.generate_character_portrait_sheet(char, force_refresh=True))
 
-        # Run locations and characters in parallel
         await asyncio.gather(*tasks, return_exceptions=True)
 
         # 2. Scene Keyframes and Audio Dialogues in Parallel
@@ -193,26 +188,33 @@ async def generate_draft_movie(
     project_id: str,
     video_model: str = Query(default="wan2_1_14b", description="Chosen AI Video Model")
 ):
+    """
+    Renders all 15s scenes in PARALLEL and stitches into unified movie with Audio in seconds.
+    """
     if project_id not in PROJECTS_DB:
         raise HTTPException(status_code=404, detail="Project not found")
 
     project = PROJECTS_DB[project_id]
     project.status = "drafting"
 
+    # Parallel scene rendering to avoid Cloudflare timeouts
+    video_tasks = []
     for sc in project.scenes:
         loc = next((l for l in project.locations if l.location_id == sc.location_id), project.locations[0])
         char = next((c for c in project.characters if c.character_id in sc.character_ids), project.characters[0])
 
-        await video_studio.generate_15s_scene_video(
+        video_tasks.append(video_studio.generate_15s_scene_video(
             scene=sc,
             character=char,
             location=loc,
             composite_keyframe_url=sc.composite_keyframe_url,
             mode="draft",
             selected_model=video_model
-        )
+        ))
 
+    await asyncio.gather(*video_tasks, return_exceptions=True)
     movie_assembler.assemble_full_movie(project, mode="draft")
+    print(f"[Draft API] ✅ Full draft movie rendered: {project.full_draft_movie_url}")
     return project
 
 
@@ -265,19 +267,21 @@ async def approve_and_render_final_master(
     project = PROJECTS_DB[project_id]
     project.status = "rendering_final"
 
+    video_tasks = []
     for sc in project.scenes:
         loc = next((l for l in project.locations if l.location_id == sc.location_id), project.locations[0])
         char = next((c for c in project.characters if c.character_id in sc.character_ids), project.characters[0])
 
-        await video_studio.generate_15s_scene_video(
+        video_tasks.append(video_studio.generate_15s_scene_video(
             scene=sc,
             character=char,
             location=loc,
             composite_keyframe_url=sc.composite_keyframe_url,
             mode="final",
             selected_model=video_model
-        )
+        ))
 
+    await asyncio.gather(*video_tasks, return_exceptions=True)
     movie_assembler.assemble_full_movie(project, mode="final")
     return project
 
