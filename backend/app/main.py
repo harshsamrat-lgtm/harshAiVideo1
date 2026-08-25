@@ -9,7 +9,7 @@ from typing import Dict, Any, List
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 
 from app.models import StoryInputRequest, ProjectState, SceneModel
 from app.engines.story_director import StoryDirectorEngine
@@ -79,7 +79,7 @@ def get_system_status():
 async def analyze_hindi_story(request: StoryInputRequest):
     """
     Step 1: Analyzes raw Hindi story text.
-    Builds persistent Character profiles, Location DNAs, and 10s scene breakdowns.
+    Builds persistent Character profiles, Location DNAs, and 15s max scene breakdowns.
     """
     project = director_engine.parse_story(request)
 
@@ -91,7 +91,7 @@ async def analyze_hindi_story(request: StoryInputRequest):
     for loc in project.locations:
         location_mgr.generate_master_establishing_shot(loc)
 
-    # 3. Generate composite keyframes for all 10s scenes
+    # 3. Generate composite keyframes for all scenes
     for sc in project.scenes:
         loc = next((l for l in project.locations if l.location_id == sc.location_id), project.locations[0])
         char = next((c for c in project.characters if c.character_id in sc.character_ids), project.characters[0])
@@ -106,7 +106,7 @@ async def analyze_hindi_story(request: StoryInputRequest):
 @app.post("/api/render/draft/{project_id}")
 async def generate_draft_movie(project_id: str, background_tasks: BackgroundTasks):
     """
-    Step 2: Generates fast 10-second draft clips (480p/720p) + Hindi dialogues + stitches draft movie.
+    Step 2: Generates fast 15-second draft clips (480p/720p) + Hindi dialogues + stitches draft movie.
     """
     if project_id not in PROJECTS_DB:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -123,7 +123,7 @@ async def generate_draft_movie(project_id: str, background_tasks: BackgroundTask
             if sc.dialogue:
                 await voice_engine.generate_character_dialogue(sc.dialogue, char)
 
-            # 2. Generate 10s Draft Video
+            # 2. Generate 15s Draft Video
             keyframe_path = sc.composite_keyframe_url.replace("/media/", "media_store/")
             await video_engine.generate_10s_scene_video(
                 scene=sc,
@@ -151,7 +151,7 @@ def get_project(project_id: str):
 @app.post("/api/scene/{project_id}/regenerate/{scene_number}")
 async def regenerate_single_scene(project_id: str, scene_number: int, custom_prompt: str = None):
     """
-    Allows user to edit and regenerate any specific 10s scene in the timeline.
+    Allows user to edit and regenerate any specific 15s scene in the timeline.
     """
     if project_id not in PROJECTS_DB:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -176,7 +176,6 @@ async def regenerate_single_scene(project_id: str, scene_number: int, custom_pro
         mode="draft"
     )
 
-    # Reassemble draft movie
     movie_assembler.assemble_full_movie(project, mode="draft")
     return scene
 
@@ -206,16 +205,24 @@ async def approve_and_render_final_master(project_id: str):
             mode="final"
         )
 
-    # Final FFmpeg Master Stitching + Subtitles
     movie_assembler.assemble_full_movie(project, mode="final")
     return project
 
 
-# Serve standalone Web Studio Dashboard
-@app.get("/")
+# Bulletproof Studio UI Static Delivery
+@app.get("/", response_class=HTMLResponse)
 def serve_studio_ui():
-    """Serves the integrated single-page Cinema Studio Dashboard."""
-    ui_path = "frontend/index.html"
-    if os.path.exists(ui_path):
-        return FileResponse(ui_path)
-    return {"message": "AI Hindi Cinema Studio Backend Running. Frontend is located in /frontend"}
+    """Serves the integrated single-page Cinema Studio Dashboard across any working directory."""
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "frontend", "index.html"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "index.html"),
+        "../frontend/index.html",
+        "frontend/index.html",
+        "/app/frontend/index.html"
+    ]
+    for p in possible_paths:
+        if os.path.exists(p):
+            with open(p, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read())
+
+    return HTMLResponse("<h2>AI Hindi Cinema Studio UI loading error: index.html not found.</h2>")

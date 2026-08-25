@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Hindi Cinema Studio | MiniMax H3 (15s Max Native Scenes)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0c10;
+      --bg-secondary: #12161f;
+      --bg-card: rgba(22, 27, 38, 0.75);
+      --border-color: rgba(255, 215, 0, 0.15);
+      --border-focus: rgba(255, 204, 0, 0.5);
+      --gold-primary: #ffc400;
+      --gold-glow: rgba(255, 196, 0, 0.25);
+      --accent-blue: #38bdf8;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', 'Noto Sans Devanagari', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: rgba(18, 22, 31, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      font-size: 26px;
+      background: linear-gradient(135deg, #ffc400, #ff8800);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      background: rgba(255, 196, 0, 0.12);
+      color: var(--gold-primary);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 196, 0, 0.3);
+      font-weight: 600;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    .tabs-bar {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      padding: 0 32px;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 16px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .tab-btn:hover { color: var(--text-main); }
+    .tab-btn.active { color: var(--gold-primary); }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gold-primary);
+      box-shadow: 0 -2px 8px var(--gold-glow);
+    }
+
+    main {
+      flex: 1;
+      padding: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title span.badge {
+      font-size: 12px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .form-group { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      background: rgba(10, 12, 16, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 140px;
+      line-height: 1.6;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #ffc400, #e69d00);
+      color: #000;
+      box-shadow: 0 4px 15px rgba(255, 196, 0, 0.3);
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 196, 0, 0.45);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.14); }
+
+    .btn-approve {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-size: 16px;
+      padding: 14px 28px;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-approve:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+    }
+
+    .asset-card {
+      background: rgba(15, 18, 26, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .asset-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-focus);
+    }
+
+    .asset-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #000;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .asset-body { padding: 16px; }
+
+    .asset-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gold-primary);
+      margin-bottom: 6px;
+    }
+
+    .asset-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .scene-card {
+      background: rgba(18, 22, 32, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+      display: grid;
+      grid-template-columns: 240px 1fr 180px;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .scene-preview-box {
+      width: 100%;
+      height: 135px;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .scene-preview-box img, .scene-preview-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .scene-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.75);
+      color: var(--gold-primary);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .scene-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .scene-prompt {
+      font-size: 13px;
+      color: var(--text-main);
+      line-height: 1.4;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 6px;
+      border-left: 3px solid var(--gold-primary);
+    }
+
+    .scene-dialogue {
+      font-size: 13px;
+      color: #93c5fd;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cinema-stage {
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .cinema-video {
+      width: 100%;
+      max-height: 520px;
+      display: block;
+    }
+
+    .stage-controls {
+      background: rgba(18, 22, 31, 0.95);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .loader {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">🎬 AI HINDI CINEMA STUDIO</div>
+      <div class="brand-badge">MiniMax H3 (15s Max Native Engine)</div>
+    </div>
+    <div class="header-status">
+      <div class="status-indicator">
+        <div class="dot" id="gpu-status-dot"></div>
+        <span id="gpu-status-text">MiniMax H3 Ref2VA Active (15s Native Max)</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('tab-story')">📝 1. स्टोरी एवं स्क्रिप्ट</button>
+    <button class="tab-btn" onclick="switchTab('tab-locations')">🏰 2. लोकेशन डीएनए</button>
+    <button class="tab-btn" onclick="switchTab('tab-characters')">👥 3. कलाकार एवं आवाज</button>
+    <button class="tab-btn" onclick="switchTab('tab-scenes')">🎞️ 4. 15s सीन स्टोरीबोर्ड</button>
+    <button class="tab-btn" onclick="switchTab('tab-movie')">🎬 5. ड्राफ्ट व फाइनल मूवी</button>
+  </div>
+
+  <!-- Main Content -->
+  <main>
+    <!-- TAB 1: Story Input -->
+    <div id="tab-story" class="tab-content active">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>हिंदी कहानी इनपुट एवं AI स्क्रीनप्ले डायरेक्टर</span>
+          <span class="badge">MiniMax H3 15-Second Max Scenes</span>
+        </div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+          <div class="form-group">
+            <label>फिल्म का शीर्षक (Movie Title)</label>
+            <input type="text" id="story-title" value="गाँव का रहस्यमयी अंधेरा" placeholder="शीर्षक दर्ज करें...">
+          </div>
+          <div class="form-group">
+            <label>जॉनर एवं मूड (Genre)</label>
+            <select id="story-genre">
+              <option value="Mystery Thriller">सस्पेंस एवं थ्रिलर (Mystery Thriller)</option>
+              <option value="Rural Bollywood Drama">ग्रामीण ड्रामा (Rural Bollywood Drama)</option>
+              <option value="Mythological Epic">पौराणिक एवं ऐतिहासिक (Mythological)</option>
+              <option value="Supernatural Horror">रहस्यमयी हॉरर (Horror)</option>
+              <option value="Sci-Fi Adventure">भविष्यवादी एडवेंचर (Sci-Fi)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>प्रति सीन अवधि (Max Scene Duration)</label>
+            <select id="scene-duration">
+              <option value="15" selected>15 सेकंड (MiniMax H3 Native Max - Recommended)</option>
+              <option value="10">10 सेकंड (Standard Cut)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>हिंदी कहानी (Hindi Story Text)</label>
+          <textarea id="story-text" placeholder="यहाँ अपनी पूरी हिंदी कहानी लिखें या पेस्ट करें...">रामू अपने पुराने कच्चे घर की खिड़की पर खड़ा था। सुबह की पहली किरणें मिट्टी की दीवारों पर पड़ रही थीं। बाहर घने जंगल से अजीब तरह की रहस्यमयी आवाजें आ रही थीं। रामू ने अपनी पुरानी सफेद धोती-कुर्ता संभाला और मन ही मन तय किया कि आज उसे इस रहस्य का पता लगाना ही होगा। वह घर का भारी लकड़ी का दरवाजा खोलकर घने जंगल के अनजान रास्ते की ओर बढ़ चला।</textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn btn-gold" id="btn-parse-story" onclick="analyzeStory()">
+            <span>🎭 स्क्रीनप्ले तैयार करें (Analyze & Parse)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Location DNA -->
+    <div id="tab-locations" class="tab-content">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>प्रयुक्त स्थानों की एकरूपता (Location & Environment DNA)</span>
+          <span class="badge">Master Establishing Assets</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+          यह सुनिश्चित करता है कि जब भी कहानी किसी स्थान पर वापस लौटे, उसकी वास्तुकला, दीवारें, प्रॉप्स और लाइटिंग 100% एक जैसी रहे।
+        </p>
+        <div class="grid-3" id="locations-grid"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Character & Voice Casting -->
+    <div id="tab-characters" class="tab-content">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>कलाकार की शक्ल एवं आवाज की निरंतरता (Character DNA & Voice Studio)</span>
+          <span class="badge">360° Turnaround & Neural Voice</span>
+        </div>
+        <div class="grid-3" id="characters-grid"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: 15s Scene Storyboard -->
+    <div id="tab-scenes" class="tab-content">
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <div class="card-title" style="margin-bottom: 4px;">15-सेकंड अधिकतम सीन स्टोरीबोर्ड एवं टाइमलाइन</div>
+            <p style="color: var(--text-muted); font-size: 13px;">MiniMax H3 Ref2VA 15s Native Clips, कैमरा गति और डायलॉग्स।</p>
+          </div>
+          <button class="btn btn-gold" onclick="generateDraftMovie()">
+            <span>⚡ ड्राफ्ट मूवी रेंडर करें (Generate Draft)</span>
+          </button>
+        </div>
+        <div id="scenes-timeline"></div>
+      </div>
+    </div>
+
+    <!-- TAB 5: Draft vs Final Movie -->
+    <div id="tab-movie" class="tab-content">
+      <div class="glass-card">
+        <div class="card-title">
+          <span>सिनेमा प्रीव्यू एवं अप्रूवल थियेटर (Cinema Preview & Export)</span>
+          <span class="badge" id="movie-quality-badge">Draft Preview (480p/720p)</span>
+        </div>
+
+        <div class="cinema-stage">
+          <video id="full-movie-player" class="cinema-video" controls poster="">
+            <source id="movie-video-src" src="" type="video/mp4">
+            आपका ब्राउज़र वीडियो प्लेयर का समर्थन नहीं करता।
+          </video>
+          <div class="stage-controls">
+            <div>
+              <div style="font-weight: 700; font-size: 16px;" id="player-movie-title">गाँव का रहस्यमयी अंधेरा</div>
+              <div style="font-size: 12px; color: var(--text-muted);" id="player-movie-meta">MiniMax H3 Multi-Track FFmpeg Master</div>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <a class="btn btn-secondary" id="btn-download-srt" href="#" download="subtitles.srt" style="display: none;">
+                📜 सबटाइटल (.SRT)
+              </a>
+              <a class="btn btn-secondary" id="btn-download-mp4" href="#" download="movie.mp4" style="display: none;">
+                📥 डाउनलोड मूवी (.MP4)
+              </a>
+              <button class="btn btn-approve" id="btn-approve-final" onclick="approveFinalMovie()">
+                ✨ स्वीकृत करें व 1080p फाइनल रेंडर करें
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentProject = null;
+    const API_BASE = window.location.origin;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    async function analyzeStory() {
+      const btn = document.getElementById('btn-parse-story');
+      btn.innerHTML = '<span class="loader"></span> विश्लेषण जारी है...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/story/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: document.getElementById('story-title').value,
+            genre: document.getElementById('story-genre').value,
+            story_text: document.getElementById('story-text').value,
+            scene_duration_seconds: parseInt(document.getElementById('scene-duration').value || '15')
+          })
+        });
+
+        currentProject = await res.json();
+        renderProjectAssets();
+        document.querySelectorAll('.tab-btn')[3].click();
+      } catch (err) {
+        alert('कहानी विश्लेषण में त्रुटि: ' + err.message);
+      } finally {
+        btn.innerHTML = '<span>🎭 स्क्रीनप्ले तैयार करें (Analyze & Parse)</span>';
+        btn.disabled = false;
+      }
+    }
+
+    function renderProjectAssets() {
+      if (!currentProject) return;
+
+      // 1. Render Locations
+      const locContainer = document.getElementById('locations-grid');
+      locContainer.innerHTML = '';
+      currentProject.locations.forEach(loc => {
+        locContainer.innerHTML += `
+          <div class="asset-card">
+            <img class="asset-img" src="${loc.master_establishing_url}" alt="${loc.name}">
+            <div class="asset-body">
+              <div class="asset-title">📍 ${loc.name}</div>
+              <div class="asset-meta">
+                <b>शैली:</b> ${loc.architecture_style}<br>
+                <b>प्रॉप्स:</b> ${loc.anchor_props.join(', ')}<br>
+                <b>कलर टोन:</b> ${loc.color_palette}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // 2. Render Characters
+      const charContainer = document.getElementById('characters-grid');
+      charContainer.innerHTML = '';
+      currentProject.characters.forEach(char => {
+        charContainer.innerHTML += `
+          <div class="asset-card">
+            <img class="asset-img" src="${char.master_portrait_url}" alt="${char.name}">
+            <div class="asset-body">
+              <div class="asset-title">👤 ${char.name} (${char.age} वर्ष)</div>
+              <div class="asset-meta">
+                <b>रूप-रंग:</b> ${char.appearance}<br>
+                <b>वेशभूषा:</b> ${char.costume}<br>
+                <b>आवाज:</b> ${char.voice_profile}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // 3. Render Scenes Timeline
+      const scenesContainer = document.getElementById('scenes-timeline');
+      scenesContainer.innerHTML = '';
+      currentProject.scenes.forEach(sc => {
+        const videoHtml = sc.draft_video_url 
+          ? `<video src="${sc.draft_video_url}" controls style="width:100%; height:100%; object-fit:cover;"></video>`
+          : `<img src="${sc.composite_keyframe_url}" alt="Keyframe">`;
+
+        scenesContainer.innerHTML += `
+          <div class="scene-card">
+            <div class="scene-preview-box">
+              ${videoHtml}
+              <div class="scene-badge">SCENE ${sc.scene_number} (${sc.duration_seconds}s)</div>
+            </div>
+            <div class="scene-info">
+              <div style="font-weight:700; color:var(--gold-primary); font-size:14px;">
+                📍 ${sc.location_name} • 🎥 ${sc.camera_movement}
+              </div>
+              <div class="scene-prompt">${sc.visual_prompt}</div>
+              ${sc.dialogue ? `<div class="scene-dialogue">🎙️ <b>${sc.dialogue.character_name}:</b> "${sc.dialogue.text}"</div>` : ''}
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="btn btn-secondary" onclick="regenerateScene(${sc.scene_number})">
+                🔄 री-जनरेट
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    async function generateDraftMovie() {
+      if (!currentProject) {
+        alert('कृपया पहले कहानी दर्ज करें।');
+        return;
+      }
+
+      alert('ड्राफ्ट मूवी रेंडरिंग शुरू हो गई है... (15s क्लिप्स + हिंदी संवाद + BGM)');
+      try {
+        const res = await fetch(`${API_BASE}/api/render/draft/${currentProject.project_id}`, { method: 'POST' });
+        currentProject = await res.json();
+        renderProjectAssets();
+
+        if (currentProject.full_draft_movie_url) {
+          const player = document.getElementById('full-movie-player');
+          player.src = currentProject.full_draft_movie_url;
+          player.load();
+
+          document.getElementById('btn-download-mp4').href = currentProject.full_draft_movie_url;
+          document.getElementById('btn-download-mp4').style.display = 'inline-flex';
+          
+          if (currentProject.subtitle_srt_url) {
+            document.getElementById('btn-download-srt').href = currentProject.subtitle_srt_url;
+            document.getElementById('btn-download-srt').style.display = 'inline-flex';
+          }
+
+          document.querySelectorAll('.tab-btn')[4].click();
+        }
+      } catch (err) {
+        alert('ड्राफ्ट निर्माण में त्रुटि: ' + err.message);
+      }
+    }
+
+    async function regenerateScene(sceneNumber) {
+      const customPrompt = prompt('इस सीन के लिए नया प्रॉम्प्ट दर्ज करें (या खाली छोड़ें):');
+      try {
+        const res = await fetch(`${API_BASE}/api/scene/${currentProject.project_id}/regenerate/${sceneNumber}?custom_prompt=${encodeURIComponent(customPrompt || '')}`, {
+          method: 'POST'
+        });
+        alert(`सीन ${sceneNumber} सफलतापूर्वक री-जनरेट हो गया!`);
+        const pRes = await fetch(`${API_BASE}/api/project/${currentProject.project_id}`);
+        currentProject = await pRes.json();
+        renderProjectAssets();
+      } catch (err) {
+        alert('सीन री-जनरेट में त्रुटि: ' + err.message);
+      }
+    }
+
+    async function approveFinalMovie() {
+      if (!currentProject) return;
+      const btn = document.getElementById('btn-approve-final');
+      btn.innerHTML = '<span class="loader"></span> 1080p रेंडरिंग जारी है...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/render/approve-final/${currentProject.project_id}`, { method: 'POST' });
+        currentProject = await res.json();
+
+        if (currentProject.full_final_movie_url) {
+          const player = document.getElementById('full-movie-player');
+          player.src = currentProject.full_final_movie_url;
+          player.load();
+
+          document.getElementById('movie-quality-badge').innerText = '1080p Full HD Master (Approved)';
+          document.getElementById('movie-quality-badge').style.background = 'rgba(16, 185, 129, 0.2)';
+          document.getElementById('movie-quality-badge').style.color = '#10b981';
+          
+          document.getElementById('btn-download-mp4').href = currentProject.full_final_movie_url;
+          alert('बधाई हो! आपकी 1080p हाई-रेज़ोल्यूशन फाइनल मूवी तैयार है!');
+        }
+      } catch (err) {
+        alert('फाइनल रेंडर में त्रुटि: ' + err.message);
+      } finally {
+        btn.innerHTML = '✨ स्वीकृत करें व 1080p फाइनल रेंडर करें';
+        btn.disabled = false;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/system/status`);
+        const data = await res.json();
+        document.getElementById('gpu-status-text').innerText = `${data.minimax_h3_model} (${data.mode})`;
+      } catch (e) {}
+    });
+  </script>
+</body>
+</html>
