@@ -1,29 +1,26 @@
-# Python bytecode & cache
+# Python cache
 __pycache__/
-*.py[cod]
-*$py.class
-*.env
-.venv/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
 venv/
-ENV/
+.venv/
 
-# Large media files generated during runtime
-media_store/characters/*
-!media_store/characters/.gitkeep
-media_store/locations/*
-!media_store/locations/.gitkeep
-media_store/composite_keyframes/*
-!media_store/composite_keyframes/.gitkeep
-media_store/videos/*
-!media_store/videos/.gitkeep
-media_store/audio/*
-!media_store/audio/.gitkeep
-media_store/movies/*
-!media_store/movies/.gitkeep
+# Media Store generated outputs
+backend/media_store/
+media_store/
+*.mp4
+*.wav
+*.mp3
+*.png
+*.jpg
+*.srt
+*.txt
 
-# ComfyUI & model weights (downloaded on server)
+# ComfyUI & logs
 ComfyUI/
+*.log
 *.safetensors
 *.ckpt
-*.bin
-*.log
