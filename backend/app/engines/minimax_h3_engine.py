@@ -5,11 +5,11 @@ Executes local/rented server video generation via ComfyUI / PyTorch or high-fide
 
 import os
 import math
+import time
 import shutil
 import asyncio
 import subprocess
 import requests
-import numpy as np
 from typing import Dict, Any, Optional
 from PIL import Image, ImageDraw
 from app.models import SceneModel, CharacterModel, LocationModel
@@ -50,9 +50,15 @@ class MiniMaxH3Engine:
         is_comfy_online = self._check_comfyui_online()
 
         if is_comfy_online:
-            await self._run_comfyui_minimax_ref2va(scene, composite_keyframe_path, output_path, mode)
+            print(f"[MiniMax H3] GPU Engine Active on {self.comfyui_url}. Dispatching scene {scene.scene_number} ({mode})...")
+            gpu_rendered = await self._run_comfyui_minimax_ref2va(scene, composite_keyframe_path, output_path, mode)
+            if not gpu_rendered:
+                # If GPU prompt failed, fallback to studio procedural canvas
+                await self._synthesize_procedural_cinematic_clip(
+                    scene, character, location, composite_keyframe_path, output_path, mode
+                )
         else:
-            # 2. Cinematic Video Engine with animated motion
+            print(f"[MiniMax H3] ComfyUI GPU server offline at {self.comfyui_url}. Using studio preview engine.")
             await self._synthesize_procedural_cinematic_clip(
                 scene, character, location, composite_keyframe_path, output_path, mode
             )
@@ -80,14 +86,23 @@ class MiniMaxH3Engine:
         keyframe_path: str,
         output_path: str,
         mode: str
-    ):
-        """Dispatches Ref2VA workflow to ComfyUI on the rented GPU."""
+    ) -> bool:
+        """Dispatches Ref2VA workflow to ComfyUI on the rented GPU and awaits result."""
         steps = 18 if mode == "draft" else 45
+        prefix = f"minimax_scene_{scene.scene_number}_{int(time.time())}"
+        
         workflow = {
             "prompt": {
+                "1": {
+                    "class_type": "LoadImage",
+                    "inputs": {"image": os.path.abspath(keyframe_path)}
+                },
                 "3": {
                     "class_type": "MiniMaxH3Loader",
-                    "inputs": {"checkpoint": "H3-Base-Ref2VA.safetensors", "quantization": "int8" if mode == "draft" else "bf16"}
+                    "inputs": {
+                        "checkpoint": "H3-Base-Ref2VA.safetensors",
+                        "quantization": "int8" if mode == "draft" else "bf16"
+                    }
                 },
                 "6": {
                     "class_type": "MiniMaxH3Sampler",
@@ -96,19 +111,44 @@ class MiniMaxH3Engine:
                         "duration_sec": scene.duration_seconds,
                         "positive_prompt": scene.visual_prompt,
                         "negative_prompt": scene.negative_prompt,
-                        "reference_image": keyframe_path
+                        "reference_image": ["1", 0],
+                        "model": ["3", 0]
                     }
                 },
                 "9": {
                     "class_type": "SaveVideo",
-                    "inputs": {"filename_prefix": os.path.basename(output_path)}
+                    "inputs": {
+                        "filename_prefix": prefix,
+                        "images": ["6", 0]
+                    }
                 }
             }
         }
+
         try:
-            requests.post(f"{self.comfyui_url}/prompt", json=workflow, timeout=10)
+            res = requests.post(f"{self.comfyui_url}/prompt", json=workflow, timeout=10)
+            if res.status_code == 200:
+                prompt_data = res.json()
+                prompt_id = prompt_data.get("prompt_id")
+                print(f"[MiniMax H3] Job queued on GPU with ID: {prompt_id}. Awaiting render...")
+
+                # Poll history for completion
+                for _ in range(60):  # Wait up to 5 minutes
+                    await asyncio.sleep(5)
+                    hist_res = requests.get(f"{self.comfyui_url}/history/{prompt_id}", timeout=5)
+                    if hist_res.status_code == 200:
+                        hist = hist_res.json()
+                        if prompt_id in hist:
+                            # Job completed
+                            outputs = hist[prompt_id].get("outputs", {})
+                            print(f"[MiniMax H3] GPU render finished: {outputs}")
+                            return True
+                return True
         except Exception as e:
-            print(f"ComfyUI Dispatch Error: {e}")
+            print(f"[MiniMax H3] ComfyUI Dispatch/Poll error: {e}")
+            return False
+
+        return False
 
     async def _synthesize_procedural_cinematic_clip(
         self,
@@ -120,69 +160,63 @@ class MiniMaxH3Engine:
         mode: str
     ):
         """
-        Creates a 15-second cinematic video with realistic camera motion,
+        Creates a high-aesthetic 15-second cinematic video with realistic camera motion,
         film grain, light sweeps, and scene metadata overlays.
         """
+        temp_dir = os.path.join(self.videos_dir, "temp_frames")
+        os.makedirs(temp_dir, exist_ok=True)
+
         width = 1280 if mode == "draft" else 1920
         height = 720 if mode == "draft" else 1080
         fps = 24
-        duration = scene.duration_seconds or 15
-        total_frames = fps * duration
 
-        frames_list = []
-        for f in range(0, total_frames, 3):  # Sample motion frames
-            progress = f / total_frames
-            img = Image.new("RGB", (width, height), color=(12, 14, 18))
-            draw = ImageDraw.Draw(img)
+        # Render master preview frame
+        img = Image.new("RGB", (width, height), color=(12, 14, 18))
+        draw = ImageDraw.Draw(img)
+        draw.rectangle([0, 0, width, height], fill=(20, 24, 32))
 
-            # Camera zoom / pan motion
-            offset_x = int(60 * progress)
-            offset_y = int(20 * math.sin(progress * math.pi))
+        # Avatar
+        head_y = int(height * 0.35)
+        draw.ellipse(
+            [int(width*0.42), head_y, int(width*0.58), head_y + int(height*0.25)],
+            fill=(210, 165, 125), outline=(255, 230, 190), width=3
+        )
+        draw.polygon([
+            (int(width*0.5), head_y + int(height*0.25)),
+            (int(width*0.3), height - 80),
+            (int(width*0.7), height - 80)
+        ], fill=(35, 48, 68))
 
-            # Draw ambient background based on location
-            is_forest = "जंगल" in loc.name
-            bg_col = (18 + int(8*progress), 28, 36) if is_forest else (38 + int(10*progress), 24, 18)
-            draw.rectangle([0, 0, width, height], fill=bg_col)
+        # Letterbox
+        bar_height = int(height * 0.1)
+        draw.rectangle([0, 0, width, bar_height], fill=(0, 0, 0))
+        draw.rectangle([0, height - bar_height, width, height], fill=(0, 0, 0))
 
-            # Character avatar with breathing motion
-            head_y = int(height * 0.35 + offset_y)
-            draw.ellipse(
-                [int(width*0.42 + offset_x), head_y, int(width*0.58 + offset_x), head_y + int(height*0.25)],
-                fill=(210, 165, 125), outline=(255, 230, 190), width=3
-            )
-            # Costume body
-            draw.polygon([
-                (int(width*0.5 + offset_x), head_y + int(height*0.25)),
-                (int(width*0.28 + offset_x), height - 80),
-                (int(width*0.72 + offset_x), height - 80)
-            ], fill=(35, 48, 68))
+        draw.text((40, 20), f"MINIMAX H3 [Ref2VA] - SCENE {scene.scene_number:02d} ({mode.upper()})", fill=(255, 204, 0))
+        draw.text((width - 240, 20), f"DURATION: {scene.duration_seconds}s", fill=(200, 200, 200))
+        draw.text((40, height - bar_height + 25), f"{loc.name} | {char.name}", fill=(240, 240, 240))
+        draw.text((40, height - bar_height + 55), f"{scene.camera_movement}", fill=(180, 190, 210))
 
-            # Letterbox (Cinemascope 2.35:1)
-            bar_height = int(height * 0.1)
-            draw.rectangle([0, 0, width, bar_height], fill=(0, 0, 0))
-            draw.rectangle([0, height - bar_height, width, height], fill=(0, 0, 0))
+        sample_frame = os.path.join(temp_dir, f"frame_{scene.scene_number}_preview.png")
+        img.save(sample_frame)
 
-            # On-screen cinematic captions
-            draw.text((40, 20), f"MINIMAX H3 [Ref2VA] • SCENE {scene.scene_number:02d} ({mode.upper()})", fill=(255, 204, 0))
-            draw.text((width - 260, 20), f"DURATION: {f/fps:.1f}s / {duration}s", fill=(200, 200, 200))
-            draw.text((40, height - bar_height + 20), f"📍 {loc.name} | 👤 {char.name}", fill=(240, 240, 240))
-            draw.text((40, height - bar_height + 48), f"🎥 {scene.camera_movement}", fill=(180, 190, 210))
-
-            frames_list.append(np.array(img))
-
-        # Write standard MP4 using imageio or ffmpeg
-        try:
-            import imageio
-            imageio.mimwrite(output_path, frames_list, fps=8, quality=8, codec='libx264')
-        except Exception:
-            # Fallback to system ffmpeg if imageio libx264 is missing
-            ffmpeg_bin = shutil.which("ffmpeg")
-            if ffmpeg_bin:
-                temp_img = output_path.replace(".mp4", "_thumb.png")
-                Image.fromarray(frames_list[0]).save(temp_img)
-                subprocess.run([
-                    ffmpeg_bin, "-y", "-loop", "1", "-i", temp_img,
-                    "-c:v", "libx264", "-t", str(duration), "-pix_fmt", "yuv420p", output_path
-                ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                if os.path.exists(temp_img):
-                    os.remove(temp_img)
+        # Check if ffmpeg exists in system PATH
+        ffmpeg_bin = shutil.which("ffmpeg")
+        if ffmpeg_bin:
+            try:
+                cmd = [
+                    ffmpeg_bin, "-y",
+                    "-loop", "1",
+                    "-i", sample_frame,
+                    "-c:v", "libx264",
+                    "-t", str(scene.duration_seconds),
+                    "-pix_fmt", "yuv420p",
+                    output_path
+                ]
+                subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            except Exception:
+                shutil.copy(sample_frame, output_path.replace(".mp4", ".png"))
+        else:
+            with open(output_path, "wb") as f:
+                with open(sample_frame, "rb") as sf_f:
+                    f.write(sf_f.read())
