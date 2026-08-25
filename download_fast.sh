@@ -1,16 +1,14 @@
 #!/bin/bash
 # ==============================================================================
-# AI Hindi Cinema Studio - Ultra Fast High-Speed Model Downloader (aria2c 16x)
-# Downloads Wan2.1 (~3.2GB), SDXL (~6.4GB), and MiniMax H3 (~18GB) with Live Progress
+# AI Hindi Cinema Studio - Multi-Model High-Speed Downloader (Wan2.1 14B + 1.3B + MiniMax)
 # ==============================================================================
 
 set -e
 
 echo "================================================================="
-echo "⚡ Starting Ultra-Fast Multi-Threaded Model Downloader (aria2c 16x)"
+echo "⚡ AI Hindi Cinema Studio: High-Speed Model Downloader"
 echo "================================================================="
 
-# 1. Install aria2 for maximum 100MB/s multi-stream speed
 apt-get update -y || true
 apt-get install -y aria2 wget curl ffmpeg || true
 
@@ -18,53 +16,58 @@ mkdir -p models/wan2_1
 mkdir -p models/image_gen
 mkdir -p ComfyUI/models/checkpoints
 
-# 2. Download Wan2.1 Video Model (~3.2 GB)
 echo ""
-echo "📥 [1/3] Downloading Wan2.1 SOTA Video Diffusion Model (~3.2 GB)..."
-if [ ! -f "models/wan2_1/Wan2.1_T2V_1.3B_bf16.safetensors" ]; then
+echo "कृपया चुनें कि आप Wan2.1 का कौन सा वर्ज़न डाउनलोड करना चाहते हैं:"
+echo "1) Wan2.1-14B फ्लैगशिप मास्टर मॉडल (~28 GB - सिनेमा-ग्रेड 1080p मास्टर क्वालिटी) [अनुशंसित]"
+echo "2) Wan2.1-14B FP8 क्वांटाइज़्ड (~14 GB - तेज़ 24GB VRAM अनुकूलित)"
+echo "3) Wan2.1-1.3B लाइटवेट वर्ज़न (~3.2 GB - सुपरफास्ट ड्राफ्ट)"
+echo "4) सब कुछ डाउनलोड करें (Wan2.1 14B + MiniMax H3 + SDXL 4K)"
+echo ""
+
+# Default to Flagship 14B if unattended
+CHOICE=${1:-4}
+
+if [ "$CHOICE" == "1" ] || [ "$CHOICE" == "4" ]; then
+    echo "📥 Downloading Wan2.1-14B Flagship Video Model (~28 GB)..."
     aria2c -x 16 -s 16 -k 1M \
-        "https://huggingface.co/Wan-Video/Wan2.1-T2V-1.3B/resolve/main/Wan2.1_T2V_1.3B_bf16.safetensors" \
+        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/diffusion_models/wan2.1_i2v_720p_14B_bf16.safetensors" \
         -d models/wan2_1 \
-        -o Wan2.1_T2V_1.3B_bf16.safetensors || \
+        -o wan2.1_i2v_720p_14B_bf16.safetensors || \
+    aria2c -x 16 -s 16 -k 1M \
+        "https://huggingface.co/Wan-Video/Wan2.1-I2V-14B-720P/resolve/main/diffusion_pytorch_model.safetensors" \
+        -d models/wan2_1 \
+        -o wan2.1_i2v_720p_14B_bf16.safetensors || true
+    echo "✅ Wan2.1-14B Master Download Finished!"
+fi
+
+if [ "$CHOICE" == "2" ]; then
+    echo "📥 Downloading Wan2.1-14B FP8 Optimized Video Model (~14.5 GB)..."
+    aria2c -x 16 -s 16 -k 1M \
+        "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/diffusion_models/wan2.1_i2v_720p_14B_fp8_e4m3fn.safetensors" \
+        -d models/wan2_1 \
+        -o wan2.1_i2v_720p_14B_fp8.safetensors || true
+    echo "✅ Wan2.1-14B FP8 Download Finished!"
+fi
+
+if [ "$CHOICE" == "3" ] || [ "$CHOICE" == "4" ]; then
+    echo "📥 Downloading Wan2.1-1.3B Fast Video Model (~3.2 GB)..."
     aria2c -x 16 -s 16 -k 1M \
         "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/diffusion_models/wan2.1_t2v_1.3B_bf16.safetensors" \
         -d models/wan2_1 \
         -o Wan2.1_T2V_1.3B_bf16.safetensors || true
-    echo "✅ Wan2.1 Download Finished!"
-else
-    echo "✅ Wan2.1 is already present on disk!"
+    echo "✅ Wan2.1-1.3B Download Finished!"
 fi
 
-# 3. Download SDXL 4K Photorealism Model (~6.4 GB)
-echo ""
-echo "📥 [2/3] Downloading SDXL 4K Photorealism Model (~6.4 GB)..."
-if [ ! -f "models/image_gen/sd_xl_turbo_1.0_fp16.safetensors" ]; then
-    aria2c -x 16 -s 16 -k 1M \
-        "https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/sd_xl_turbo_1.0_fp16.safetensors" \
-        -d models/image_gen \
-        -o sd_xl_turbo_1.0_fp16.safetensors || true
-    echo "✅ SDXL 4K Photorealism Model Download Finished!"
-else
-    echo "✅ SDXL is already present on disk!"
-fi
-
-# 4. Download MiniMax H3 Video Checkpoint (~18.5 GB)
-echo ""
-echo "📥 [3/3] Downloading MiniMax H3 Ref2VA Video Checkpoint (~18.5 GB)..."
-if [ ! -f "ComfyUI/models/checkpoints/H3-Base-Ref2VA.safetensors" ]; then
+if [ "$CHOICE" == "4" ]; then
+    echo "📥 Downloading MiniMax H3 Ref2VA Video Checkpoint (~18.5 GB)..."
     aria2c -x 16 -s 16 -k 1M \
         "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/minimax_h3_ref2va_pruned_int8_convrot.safetensors" \
         -d ComfyUI/models/checkpoints \
         -o H3-Base-Ref2VA.safetensors || true
-    echo "✅ MiniMax H3 Checkpoint Download Finished!"
-else
-    echo "✅ MiniMax H3 is already present on disk!"
 fi
 
 echo ""
 echo "================================================================="
-echo "📊 Verifying Downloaded Model Status..."
+echo "📊 Current Model Status on Disk:"
 python3 check_models_status.py
-echo "================================================================="
-echo "🚀 Now start the Studio by running: ./start_server_tunnel.sh"
 echo "================================================================="

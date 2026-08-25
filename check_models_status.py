@@ -1,34 +1,43 @@
 """
 Model Status Inspector for AI Hindi Cinema Studio.
-Checks disk presence and sizes of all AI models (Wan2.1, Flux.1, SDXL, MiniMax H3).
+Checks presence and sizes of Wan2.1 (14B Flagship & 1.3B), SDXL, and MiniMax H3.
 """
 
 import os
 
 MODELS = [
     {
-        "name": "Wan2.1 (Alibaba Video Diffusion)",
+        "name": "Wan2.1-14B (Alibaba Flagship Master Video Model)",
+        "expected_gb": 28.0,
+        "paths": [
+            "models/wan2_1/wan2.1_i2v_720p_14B_bf16.safetensors",
+            "models/wan2_1/wan2.1_i2v_720p_14B_fp8.safetensors",
+            "ComfyUI/models/checkpoints/wan2.1_i2v_720p_14B_bf16.safetensors"
+        ]
+    },
+    {
+        "name": "Wan2.1-1.3B (Alibaba Fast Video Model)",
         "expected_gb": 3.2,
         "paths": [
-            "models/wan2_1/diffusion_pytorch_model.safetensors",
             "models/wan2_1/Wan2.1_T2V_1.3B_bf16.safetensors",
+            "models/wan2_1/diffusion_pytorch_model.safetensors",
             "ComfyUI/models/checkpoints/Wan2.1_T2V_1.3B_bf16.safetensors"
         ]
     },
     {
-        "name": "SDXL / Flux.1 4K Photorealism",
+        "name": "MiniMax H3 (Hailuo) 15s Video Model",
+        "expected_gb": 18.5,
+        "paths": [
+            "ComfyUI/models/checkpoints/H3-Base-Ref2VA.safetensors",
+            "ComfyUI/models/checkpoints/minimax_h3_ref2va_pruned_int8_convrot.safetensors"
+        ]
+    },
+    {
+        "name": "SDXL / Flux.1 4K Photorealism Model",
         "expected_gb": 6.4,
         "paths": [
             "models/image_gen/sd_xl_turbo_1.0_fp16.safetensors",
             "models/image_gen/flux1-schnell.safetensors"
-        ]
-    },
-    {
-        "name": "MiniMax H3 (Hailuo) 15s Video Model",
-        "expected_gb": 18.0,
-        "paths": [
-            "ComfyUI/models/checkpoints/H3-Base-Ref2VA.safetensors",
-            "ComfyUI/models/checkpoints/minimax_h3_ref2va_pruned_int8_convrot.safetensors"
         ]
     }
 ]
@@ -38,7 +47,6 @@ def check_status():
     print("📊 AI Hindi Cinema Studio - Model Status Report")
     print("=================================================================")
     
-    all_ready = True
     for m in MODELS:
         found = False
         actual_size_gb = 0
@@ -56,15 +64,11 @@ def check_status():
             print(f"✅ [DOWNLOADED] {m['name']}")
             print(f"   फ़ाइल: {found_path} ({actual_size_gb:.2f} GB)")
         else:
-            print(f"⏳ [NOT DOWNLOADED] {m['name']} (अपेक्षित: ~{m['expected_gb']} GB)")
-            all_ready = False
+            print(f"⏳ [NOT ON DISK] {m['name']} (अनुमानित: ~{m['expected_gb']} GB)")
             
     print("-----------------------------------------------------------------")
-    if all_ready:
-        print("🎉 सभी लोकल GPU मॉडल्स डिस्क पर मौजूद हैं और पूरी तरह तैयार हैं!")
-    else:
-        print("💡 मॉडल्स डाउनलोड करने के लिए चलाएं: ./download_fast.sh")
-        print("💡 (नोट: यदि मॉडल डाउनलोड नहीं भी है, तो भी क्लाउड AI इंजन से वीडियो बनती रहेगी!)")
+    print("💡 मॉडल्स डाउनलोड करने के लिए चलाएं: ./download_fast.sh")
+    print("💡 (नोट: जब तक मॉडल डाउनलोड हो रहा है, तब तक भी क्लाउड AI इंजन से 15s वीडियो बनती रहेगी!)")
     print("=================================================================")
 
 if __name__ == "__main__":
