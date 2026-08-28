@@ -12,8 +12,8 @@ echo "📦 Repository: https://github.com/harshsamrat-lgtm/harshAiVideo1"
 echo "================================================================="
 
 # 1. Update and install system media libraries
-apt-get update -y
-apt-get install -y ffmpeg git curl wget python3-pip libgl1 libglib2.0-0
+apt-get update -y || true
+apt-get install -y ffmpeg git curl wget python3-pip libgl1 libglib2.0-0 || true
 
 # 2. Setup ComfyUI Headless Server
 if [ ! -d "ComfyUI" ]; then
@@ -22,7 +22,7 @@ if [ ! -d "ComfyUI" ]; then
 fi
 
 cd ComfyUI
-pip install -r requirements.txt
+pip install -r requirements.txt || true
 
 # 3. Download MiniMax H3 (Open-Weights Checkpoint)
 echo "📥 Downloading MiniMax H3 Open-Weights (H3-Base-Ref2VA)..."
@@ -39,9 +39,11 @@ nohup python3 main.py --listen 0.0.0.0 --port 8188 > comfyui.log 2>&1 &
 
 cd ..
 
-# 5. Install Backend Requirements
+# 5. Clean conflicting packages and install backend requirements
 echo "📦 Installing AI Hindi Cinema Studio Backend Dependencies..."
-pip install -r backend/requirements.txt
+rm -rf /venv/main/lib/python*/site-packages/huggingface_hub* 2>/dev/null || true
+rm -rf /usr/local/lib/python*/dist-packages/huggingface_hub* 2>/dev/null || true
+pip install --no-cache-dir -r backend/requirements.txt || pip install -r backend/requirements.txt
 
 # 6. Start Studio Backend & Web UI
 echo "🎥 Starting Studio Web Application on port 8000..."

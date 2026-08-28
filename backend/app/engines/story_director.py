@@ -72,7 +72,7 @@ class StoryDirectorEngine:
             is_female = any(name.endswith(e) for e in female_suffixes) and name not in male_exceptions
             gender = "Female" if is_female else "Male"
 
-            char_id = f"CHAR_{project_id}_{idx+1}_{name.replace(' ', '_')}"
+            char_id = f"CHAR_{project_id}_{idx+1}"
             characters.append(CharacterModel(
                 character_id=char_id,
                 name=name,
