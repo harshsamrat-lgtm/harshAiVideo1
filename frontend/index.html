@@ -3,270 +3,433 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Hindi Cinema Studio | Precision Hindi Screenplay & Multi-Model Video Engine</title>
+  <title>AI Hindi Cinema Studio | दुनिया का सबसे उत्तम AI वीडियो जनरेशन सॉफ्टवेयर</title>
+  <meta name="description" content="AI-संचालित हिंदी कहानी से सिनेमैटिक मूवी बनाने वाला सॉफ्टवेयर — MiniMax H3, Wan2.1, Flux.1 एवं Neural Hindi Voice">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #080a0f;
-      --bg-secondary: #10141d;
-      --bg-card: rgba(18, 22, 32, 0.88);
-      --border-color: rgba(255, 215, 0, 0.2);
-      --border-focus: rgba(255, 204, 0, 0.65);
-      --gold-primary: #ffc400;
-      --gold-glow: rgba(255, 196, 0, 0.35);
+      --bg-primary: #06080c;
+      --bg-secondary: #0c1018;
+      --bg-card: rgba(14, 18, 28, 0.92);
+      --bg-card-hover: rgba(18, 24, 36, 0.95);
+      --border-subtle: rgba(255, 215, 0, 0.12);
+      --border-active: rgba(255, 196, 0, 0.55);
+      --gold: #ffc400;
+      --gold-light: #ffe066;
+      --gold-glow: rgba(255, 196, 0, 0.25);
+      --gold-deep: #e6a800;
       --accent-blue: #38bdf8;
       --accent-purple: #c084fc;
       --accent-green: #10b981;
+      --accent-emerald: #34d399;
       --accent-red: #ef4444;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --accent-pink: #f472b6;
+      --text-main: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow-card: 0 8px 32px rgba(0,0,0,0.5);
+      --shadow-glow: 0 0 30px rgba(255, 196, 0, 0.1);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Outfit', 'Noto Sans Devanagari', sans-serif;
-      background-color: var(--bg-primary);
+      font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
+      background: var(--bg-primary);
       color: var(--text-main);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
+    /* Animated background gradient */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(255,196,0,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(192,132,252,0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(56,189,248,0.02) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+      animation: bgShift 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgShift {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
+    }
+
+    /* ─── Header ─── */
     header {
-      background: rgba(16, 20, 29, 0.92);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border-color);
-      padding: 16px 32px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(8, 12, 18, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 28px;
+      height: 64px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
     }
 
-    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand { display: flex; align-items: center; gap: 16px; }
 
     .brand-logo {
-      font-size: 24px;
-      background: linear-gradient(135deg, #ffc400, #ff8800);
+      font-size: 20px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--gold), #ff8c00, var(--gold-light));
+      background-size: 200% 200%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      font-weight: 800;
-      letter-spacing: -0.5px;
+      animation: shimmer 3s ease infinite;
+      letter-spacing: -0.3px;
     }
 
-    .model-pills { display: flex; gap: 6px; }
+    @keyframes shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .pill-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
     .pill {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       padding: 3px 8px;
       border-radius: 6px;
-      border: 1px solid transparent;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
     }
 
-    .pill-flux { background: rgba(192, 132, 252, 0.15); color: #d8b4fe; border-color: rgba(192, 132, 252, 0.3); }
-    .pill-wan { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.3); }
-    .pill-tts { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.3); }
+    .pill-flux { background: rgba(192,132,252,0.12); color: #d8b4fe; border: 1px solid rgba(192,132,252,0.25); }
+    .pill-wan { background: rgba(56,189,248,0.12); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.25); }
+    .pill-tts { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
 
-    .btn-restart {
-      background: rgba(239, 68, 68, 0.15);
-      color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+
+    .btn-icon {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-secondary);
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
+      font-size: 16px;
+      transition: var(--transition);
     }
 
-    .btn-restart:hover { background: rgba(239, 68, 68, 0.3); color: #fff; }
+    .btn-icon:hover { background: rgba(255,255,255,0.12); color: var(--text-main); transform: scale(1.05); }
+    .btn-icon.danger:hover { background: rgba(239,68,68,0.2); color: #fca5a5; }
 
+    /* ─── Tabs ─── */
     .tabs-bar {
       background: var(--bg-secondary);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
       display: flex;
-      padding: 0 32px;
-      gap: 8px;
+      padding: 0 28px;
+      gap: 2px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+      z-index: 100;
     }
+
+    .tabs-bar::-webkit-scrollbar { height: 0; }
 
     .tab-btn {
       background: none;
       border: none;
       color: var(--text-muted);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-      padding: 16px 20px;
+      padding: 14px 18px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       position: relative;
-      transition: all 0.2s ease;
+      transition: var(--transition);
       font-family: inherit;
+      white-space: nowrap;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
     }
 
-    .tab-btn:hover { color: var(--text-main); }
-    .tab-btn.active { color: var(--gold-primary); }
+    .tab-btn:hover { color: var(--text-secondary); background: rgba(255,255,255,0.03); }
+    .tab-btn.active { color: var(--gold); background: rgba(255,196,0,0.05); }
 
     .tab-btn.active::after {
       content: '';
       position: absolute;
       bottom: 0;
-      left: 0;
-      right: 0;
+      left: 8px; right: 8px;
       height: 2px;
-      background: var(--gold-primary);
-      box-shadow: 0 -2px 8px var(--gold-glow);
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      box-shadow: 0 0 12px var(--gold-glow);
+      border-radius: 2px;
     }
 
+    .tab-step {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 800;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+
+    .tab-btn.active .tab-step { background: var(--gold); color: #000; }
+
+    /* ─── Main Layout ─── */
     main {
-      flex: 1;
-      padding: 32px;
-      max-width: 1400px;
+      position: relative;
+      z-index: 1;
+      padding: 24px 28px 40px;
+      max-width: 1440px;
       margin: 0 auto;
       width: 100%;
     }
 
-    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .tab-content {
+      display: none;
+      animation: fadeSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
     .tab-content.active { display: block; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* ─── Glass Cards ─── */
     .glass-card {
       background: var(--bg-card);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
+      backdrop-filter: blur(16px) saturate(150%);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-lg);
       padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-card);
+      transition: var(--transition);
+    }
+
+    .glass-card:hover { border-color: rgba(255,255,255,0.1); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .card-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       color: var(--text-main);
-      margin-bottom: 16px;
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .card-title span.badge {
-      font-size: 12px;
-      background: rgba(192, 132, 252, 0.15);
-      color: #d8b4fe;
-      padding: 3px 8px;
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
       border-radius: 6px;
-      border: 1px solid rgba(192, 132, 252, 0.3);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
     }
 
-    .form-group { margin-bottom: 20px; }
+    .badge-purple { background: rgba(192,132,252,0.12); color: #d8b4fe; border: 1px solid rgba(192,132,252,0.25); }
+    .badge-green { background: rgba(16,185,129,0.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+    .badge-blue { background: rgba(56,189,248,0.12); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.25); }
+    .badge-gold { background: rgba(255,196,0,0.12); color: var(--gold-light); border: 1px solid rgba(255,196,0,0.25); }
 
-    label {
-      display: block;
+    .card-subtitle {
       font-size: 13px;
-      font-weight: 600;
       color: var(--text-muted);
-      margin-bottom: 8px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* ─── Forms ─── */
+    .form-group { margin-bottom: 18px; }
+
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
     }
 
     input, textarea, select {
       width: 100%;
-      background: rgba(10, 12, 16, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(6, 8, 14, 0.8);
+      border: 1px solid rgba(255,255,255,0.08);
       color: var(--text-main);
-      padding: 14px 16px;
-      border-radius: 10px;
-      font-size: 15px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
       font-family: inherit;
-      transition: all 0.2s;
+      transition: var(--transition);
     }
 
     input:focus, textarea:focus, select:focus {
       outline: none;
-      border-color: var(--gold-primary);
-      box-shadow: 0 0 12px var(--gold-glow);
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow);
     }
 
-    textarea { resize: vertical; min-height: 140px; line-height: 1.6; }
+    textarea {
+      resize: vertical;
+      min-height: 130px;
+      line-height: 1.7;
+    }
 
-    .grid-3 {
+    .form-grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 22px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
     }
 
+    /* ─── Buttons ─── */
     .btn {
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-size: 14px;
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       border: none;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
+      gap: 7px;
+      transition: var(--transition);
       font-family: inherit;
+      white-space: nowrap;
     }
+
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
     .btn-gold {
-      background: linear-gradient(135deg, #ffc400, #e69d00);
+      background: linear-gradient(135deg, var(--gold), var(--gold-deep));
       color: #000;
-      box-shadow: 0 4px 15px rgba(255, 196, 0, 0.3);
+      box-shadow: 0 4px 16px rgba(255,196,0,0.25);
     }
 
-    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 196, 0, 0.45); }
+    .btn-gold:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,196,0,0.4); }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-main);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255,255,255,0.06);
+      color: var(--text-secondary);
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
-    .btn-secondary:hover { background: rgba(255, 255, 255, 0.14); }
+    .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.12); color: var(--text-main); }
 
     .btn-approve {
-      background: linear-gradient(135deg, #10b981, #059669);
+      background: linear-gradient(135deg, var(--accent-green), #059669);
       color: #fff;
-      font-size: 16px;
-      padding: 14px 28px;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      font-size: 14px;
+      padding: 12px 24px;
+      box-shadow: 0 4px 16px rgba(16,185,129,0.25);
     }
 
-    .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5); }
+    .btn-approve:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,185,129,0.4); }
+
+    /* ─── Progress Banner ─── */
+    .progress-banner {
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      margin-bottom: 18px;
+      display: none;
+      align-items: center;
+      gap: 14px;
+      animation: fadeSlideIn 0.3s ease;
+    }
+
+    .progress-banner .loader {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(56,189,248,0.3);
+      border-radius: 50%;
+      border-top-color: var(--accent-blue);
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .progress-banner .progress-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-blue);
+      flex: 1;
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(56,189,248,0.15);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+
+    /* ─── Asset Grid ─── */
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+    }
 
     .asset-card {
-      background: rgba(14, 18, 26, 0.95);
-      border: 1px solid rgba(255, 215, 0, 0.15);
-      border-radius: 14px;
+      background: rgba(10, 14, 22, 0.95);
+      border: 1px solid rgba(255,215,0,0.1);
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      transition: transform 0.2s, border-color 0.2s;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      transition: var(--transition);
+      box-shadow: var(--shadow-card);
     }
 
-    .asset-card:hover { transform: translateY(-4px); border-color: var(--border-focus); }
+    .asset-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-active);
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+    }
 
     .asset-img-wrap {
       width: 100%;
-      height: 220px;
-      background: #000;
+      aspect-ratio: 16/10;
+      background: #050608;
       overflow: hidden;
       position: relative;
     }
@@ -275,324 +438,531 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .asset-card:hover .asset-img { transform: scale(1.03); }
+    .asset-card:hover .asset-img { transform: scale(1.04); }
 
     .asset-badge {
       position: absolute;
       top: 10px;
       left: 10px;
-      background: rgba(0, 0, 0, 0.75);
-      color: var(--gold-primary);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 8px;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 196, 0, 0.3);
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
-    .asset-body { padding: 18px; }
+    .asset-body { padding: 16px; }
 
     .asset-title {
-      font-size: 17px;
+      font-size: 15px;
       font-weight: 700;
-      color: var(--gold-primary);
+      color: var(--gold);
       margin-bottom: 8px;
     }
 
     .asset-meta {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
-      line-height: 1.6;
+      line-height: 1.7;
       margin-bottom: 12px;
     }
+
+    .asset-meta b { color: var(--text-secondary); }
 
     .audio-player-box {
-      background: rgba(0, 0, 0, 0.4);
-      padding: 8px 12px;
-      border-radius: 8px;
+      background: rgba(0,0,0,0.4);
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 8px;
       margin-bottom: 12px;
     }
 
-    .audio-player-box audio { width: 100%; height: 32px; }
+    .audio-player-box audio { width: 100%; height: 30px; }
 
+    /* ─── Scene Timeline ─── */
     .scene-card {
-      background: rgba(18, 22, 32, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 18px;
+      background: rgba(14,18,28,0.9);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 14px;
       display: grid;
-      grid-template-columns: 260px 1fr 140px;
-      gap: 20px;
+      grid-template-columns: 240px 1fr 130px;
+      gap: 16px;
       align-items: center;
+      transition: var(--transition);
     }
 
-    .scene-preview-box {
+    .scene-card:hover { border-color: rgba(255,196,0,0.2); background: var(--bg-card-hover); }
+
+    .scene-preview {
       width: 100%;
-      height: 145px;
+      aspect-ratio: 16/9;
       background: #000;
-      border-radius: 10px;
+      border-radius: var(--radius-md);
       overflow: hidden;
       position: relative;
     }
 
-    .scene-preview-box img, .scene-preview-box video {
+    .scene-preview img, .scene-preview video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .scene-prompt {
-      font-size: 13px;
-      color: var(--text-main);
-      line-height: 1.4;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 10px;
-      border-radius: 6px;
-      border-left: 3px solid var(--gold-primary);
+    .scene-number-badge {
+      position: absolute;
+      top: 6px; left: 6px;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(4px);
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
     }
 
+    .scene-info { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+    .scene-location {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+      display: flex; align-items: center; gap: 6px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    .scene-prompt-box {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      background: rgba(0,0,0,0.3);
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--gold);
+      max-height: 60px;
+      overflow: hidden;
+    }
+
+    .scene-dialogue {
+      font-size: 12px;
+      color: var(--accent-blue);
+      display: flex; align-items: flex-start; gap: 4px;
+    }
+
+    .scene-actions { display: flex; flex-direction: column; gap: 8px; }
+
+    /* ─── Cinema Theater ─── */
     .cinema-stage {
       background: #000;
-      border-radius: 16px;
+      border-radius: var(--radius-xl);
       overflow: hidden;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.8);
       margin-bottom: 24px;
-      position: relative;
     }
 
-    .cinema-video { width: 100%; max-height: 520px; display: block; }
+    .cinema-video {
+      width: 100%;
+      max-height: 540px;
+      display: block;
+      background: #000;
+    }
 
     .stage-controls {
-      background: rgba(18, 22, 31, 0.95);
+      background: rgba(12,16,24,0.97);
+      backdrop-filter: blur(12px);
       padding: 16px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
-    .loader {
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 0.8s linear infinite;
+    .movie-title-text {
+      font-weight: 800;
+      font-size: 16px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .movie-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
-    .progress-banner {
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 10px;
-      padding: 14px 20px;
-      margin-bottom: 20px;
-      display: none;
-      align-items: center;
-      gap: 14px;
-      color: var(--accent-blue);
-      font-size: 14px;
-      font-weight: 600;
-    }
+    .stage-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
 
-    .model-selector-box {
-      background: rgba(255, 196, 0, 0.08);
-      border: 1px solid rgba(255, 196, 0, 0.3);
-      border-radius: 10px;
+    /* ─── Model Selector ─── */
+    .model-selector {
+      background: rgba(255,196,0,0.05);
+      border: 1px solid rgba(255,196,0,0.2);
+      border-radius: var(--radius-md);
       padding: 14px 18px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
+      flex-wrap: wrap;
     }
+
+    .model-selector label {
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 0;
+    }
+
+    .model-selector .model-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .model-selector select {
+      max-width: 420px;
+      background: rgba(6,8,14,0.9);
+      font-weight: 700;
+      color: var(--gold);
+      border-color: rgba(255,196,0,0.3);
+    }
+
+    /* ─── Toast Notifications ─── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+    }
+
+    .toast {
+      background: rgba(14,18,28,0.96);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      min-width: 320px;
+      max-width: 440px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toast.toast-exit { animation: toastOut 0.3s ease forwards; }
+
+    .toast-icon { font-size: 20px; flex-shrink: 0; }
+    .toast-msg { font-size: 13px; font-weight: 500; color: var(--text-main); line-height: 1.4; }
+
+    .toast-success { border-left: 3px solid var(--accent-green); }
+    .toast-error { border-left: 3px solid var(--accent-red); }
+    .toast-info { border-left: 3px solid var(--accent-blue); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(40px) scale(0.95); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateX(40px) scale(0.95); }
+    }
+
+    /* ─── Empty State ─── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+    .empty-state .empty-text { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .empty-state .empty-hint { font-size: 13px; }
+
+    /* ─── Footer ─── */
+    footer {
+      text-align: center;
+      padding: 20px 28px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255,255,255,0.04);
+      position: relative;
+      z-index: 1;
+    }
+
+    footer a { color: var(--gold); text-decoration: none; }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 900px) {
+      .form-grid-3 { grid-template-columns: 1fr; }
+      .scene-card { grid-template-columns: 1fr; }
+      .asset-grid { grid-template-columns: 1fr; }
+      .stage-controls { flex-direction: column; align-items: stretch; }
+      .stage-buttons { justify-content: center; }
+      .model-selector { flex-direction: column; align-items: stretch; }
+      .model-selector select { max-width: 100%; }
+      header { padding: 0 16px; }
+      main { padding: 16px; }
+      .tabs-bar { padding: 0 12px; }
+      .pill-row { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      .tab-btn { font-size: 12px; padding: 12px 10px; }
+      .tab-btn span.tab-label { display: none; }
+    }
+
+    /* ─── Scrollbar ─── */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* ─── Selection ─── */
+    ::selection { background: rgba(255,196,0,0.3); color: var(--text-main); }
   </style>
 </head>
 <body>
 
-  <!-- Top Header -->
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Header -->
   <header>
     <div class="brand">
       <div class="brand-logo">🎬 AI HINDI CINEMA STUDIO</div>
-      <div class="model-pills">
-        <span class="pill pill-flux">Flux.1 4K Art</span>
-        <span class="pill pill-wan">Wan2.1 (14B/1.3B)</span>
-        <span class="pill pill-flux">MiniMax H3</span>
-        <span class="pill pill-tts">Neural Hindi Voice</span>
+      <div class="pill-row">
+        <span class="pill pill-flux">Flux.1 4K</span>
+        <span class="pill pill-wan">Wan2.1 + H3</span>
+        <span class="pill pill-tts">Neural Voice</span>
       </div>
     </div>
-    <div class="header-status">
-      <button class="btn-restart" onclick="restartApp()" title="ऐप रिस्टार्ट करें">
-        🔄 रिस्टार्ट ऐप
-      </button>
+    <div class="header-actions">
+      <span style="font-size:11px; color:var(--text-muted); font-weight:600;">v3.0</span>
+      <button class="btn-icon danger" onclick="restartApp()" title="ऐप रिस्टार्ट करें">🔄</button>
     </div>
   </header>
 
-  <!-- Navigation Tabs -->
+  <!-- Navigation -->
   <div class="tabs-bar">
-    <button class="tab-btn active" onclick="switchTab('tab-story')">📝 1. स्टोरी एवं AI डायरेक्टर</button>
-    <button class="tab-btn" onclick="switchTab('tab-locations')">🏰 2. लोकेशन 4K AI फोटो</button>
-    <button class="tab-btn" onclick="switchTab('tab-characters')">👥 3. कलाकार एवं आवाज</button>
-    <button class="tab-btn" onclick="switchTab('tab-scenes')">🎞️ 4. 15s सीन स्टोरीबोर्ड</button>
-    <button class="tab-btn" onclick="switchTab('tab-movie')">🎬 5. ड्राफ्ट व फाइनल मूवी</button>
+    <button class="tab-btn active" onclick="switchTab('tab-story', this)">
+      <span class="tab-step">1</span>
+      <span>📝</span> <span class="tab-label">स्टोरी इनपुट</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('tab-locations', this)">
+      <span class="tab-step">2</span>
+      <span>🏰</span> <span class="tab-label">लोकेशन AI फोटो</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('tab-characters', this)">
+      <span class="tab-step">3</span>
+      <span>👥</span> <span class="tab-label">कलाकार एवं आवाज</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('tab-scenes', this)">
+      <span class="tab-step">4</span>
+      <span>🎞️</span> <span class="tab-label">15s सीन स्टोरीबोर्ड</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('tab-movie', this)">
+      <span class="tab-step">5</span>
+      <span>🎬</span> <span class="tab-label">ड्राफ्ट व फाइनल मूवी</span>
+    </button>
   </div>
 
   <!-- Main Content -->
   <main>
-    <!-- Progress Indicator Banner -->
+    <!-- Progress Banner -->
     <div id="progress-banner" class="progress-banner">
       <span class="loader"></span>
-      <span id="progress-text">AI मॉडल्स द्वारा कार्य किया जा रहा है...</span>
+      <div style="flex:1;">
+        <span class="progress-text" id="progress-text">AI मॉडल्स द्वारा कार्य किया जा रहा है...</span>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+      </div>
     </div>
 
     <!-- TAB 1: Story Input -->
     <div id="tab-story" class="tab-content active">
       <div class="glass-card">
-        <div class="card-title">
-          <span>हिंदी कहानी इनपुट एवं AI स्क्रीनप्ले डायरेक्टर</span>
-          <span class="badge">Context-Aware Scene Mapping</span>
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              हिंदी कहानी इनपुट एवं AI स्क्रीनप्ले डायरेक्टर
+              <span class="badge badge-purple">Context-Aware</span>
+            </div>
+            <div class="card-subtitle">अपनी हिंदी कहानी लिखें — AI स्वचालित रूप से पात्र, स्थान, और सिनेमैटिक सीन्स बनाएगा</div>
+          </div>
         </div>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+
+        <div class="form-grid-3">
           <div class="form-group">
-            <label>फिल्म का शीर्षक (Movie Title)</label>
+            <label>फिल्म का शीर्षक</label>
             <input type="text" id="story-title" value="गाँव का रहस्यमयी अंधेरा" placeholder="शीर्षक दर्ज करें...">
           </div>
           <div class="form-group">
-            <label>जॉनर एवं मूड (Genre)</label>
+            <label>जॉनर एवं मूड</label>
             <select id="story-genre">
-              <option value="Mystery Thriller">सस्पेंस एवं थ्रिलर (Mystery Thriller)</option>
-              <option value="Rural Bollywood Drama">ग्रामीण ड्रामा (Rural Bollywood Drama)</option>
-              <option value="Mythological Epic">पौराणिक एवं ऐतिहासिक (Mythological)</option>
-              <option value="Supernatural Horror">रहस्यमयी हॉरर (Horror)</option>
-              <option value="Sci-Fi Adventure">भविष्यवादी एडवेंचर (Sci-Fi)</option>
+              <option value="Mystery Thriller">सस्पेंस एवं थ्रिलर</option>
+              <option value="Rural Bollywood Drama">ग्रामीण ड्रामा</option>
+              <option value="Mythological Epic">पौराणिक एवं ऐतिहासिक</option>
+              <option value="Supernatural Horror">रहस्यमयी हॉरर</option>
+              <option value="Sci-Fi Adventure">भविष्यवादी एडवेंचर</option>
+              <option value="Romantic Drama">रोमांटिक ड्रामा</option>
+              <option value="Action Epic">एक्शन एपिक</option>
             </select>
           </div>
           <div class="form-group">
-            <label>प्रति सीन अवधि (Scene Duration)</label>
+            <label>प्रति सीन अवधि</label>
             <select id="scene-duration">
-              <option value="15" selected>15 सेकंड (Wan2.1 / MiniMax Native Max)</option>
-              <option value="10">10 सेकंड (Standard Cut)</option>
+              <option value="15" selected>15 सेकंड (Max Native)</option>
+              <option value="10">10 सेकंड (Standard)</option>
+              <option value="8">8 सेकंड (Quick Cut)</option>
             </select>
           </div>
         </div>
 
         <div class="form-group">
-          <label>हिंदी कहानी (Hindi Story Text)</label>
+          <label>हिंदी कहानी</label>
           <textarea id="story-text" placeholder="यहाँ अपनी पूरी हिंदी कहानी लिखें या पेस्ट करें...">रामू अपने पुराने कच्चे घर की खिड़की पर खड़ा था। सुबह की पहली किरणें मिट्टी की दीवारों पर पड़ रही थीं। बाहर घने जंगल से अजीब तरह की रहस्यमयी आवाजें आ रही थीं। रामू ने अपनी पुरानी सफेद धोती-कुर्ता संभाला और मन ही मन तय किया कि आज उसे इस रहस्य का पता लगाना ही होगा। वह घर का भारी लकड़ी का दरवाजा खोलकर घने जंगल के अनजान रास्ते की ओर बढ़ चला।</textarea>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div style="font-size: 13px; color: var(--text-muted);">
-            💡 "Analyze & Parse" दबाने पर <b>Flux.1</b> सभी लोकेशन्स और कलाकारों की 4K तस्वीरें तुरंत जनरेट करेगा।
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="font-size: 12px; color: var(--text-muted);">
+            💡 Flux.1 सभी लोकेशन्स और कलाकारों की 4K AI तस्वीरें तुरंत जनरेट करेगा।
           </div>
           <button class="btn btn-gold" id="btn-parse-story" onclick="analyzeStory()">
-            <span>✨ स्क्रीनप्ले व असली AI तस्वीरें तैयार करें</span>
+            ✨ स्क्रीनप्ले व AI तस्वीरें तैयार करें
           </button>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: Location 4K Concept Art -->
+    <!-- TAB 2: Location Art -->
     <div id="tab-locations" class="tab-content">
       <div class="glass-card">
-        <div class="card-title">
-          <span>स्थानों की 4K AI तस्वीरें (Flux.1 Location Concept Art)</span>
-          <span class="badge">100% Architectural Consistency</span>
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              स्थानों की 4K AI तस्वीरें
+              <span class="badge badge-green">100% Architectural DNA</span>
+            </div>
+            <div class="card-subtitle">कहानी में प्रयुक्त सभी स्थानों की Flux.1 द्वारा उत्पन्न असली 4K तस्वीरें</div>
+          </div>
         </div>
-        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
-          कहानी में प्रयुक्त सभी स्थानों की Flux.1 द्वारा उत्पन्न असली 4K तस्वीरें। आप किसी भी लोकेशन की फोटो को री-रोल कर सकते हैं।
-        </p>
-        <div class="grid-3" id="locations-grid"></div>
+        <div class="asset-grid" id="locations-grid">
+          <div class="empty-state">
+            <div class="empty-icon">🏰</div>
+            <div class="empty-text">अभी कोई लोकेशन नहीं</div>
+            <div class="empty-hint">कृपया पहले टैब 1 में कहानी दर्ज करें</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- TAB 3: Character & Voice Casting -->
+    <!-- TAB 3: Characters -->
     <div id="tab-characters" class="tab-content">
       <div class="glass-card">
-        <div class="card-title">
-          <span>कलाकार की असली शक्ल एवं आवाज (Flux.1 FaceID & Voice Studio)</span>
-          <span class="badge">360° Human Portraits & Neural Voices</span>
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              कलाकार की शक्ल एवं आवाज
+              <span class="badge badge-blue">Flux.1 FaceID + Neural Voice</span>
+            </div>
+            <div class="card-subtitle">पात्रों के AI-generated चेहरे और हिंदी आवाज़</div>
+          </div>
         </div>
-        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
-          पात्रों के असली चेहरे और हिंदी आवाज। आप किसी भी पात्र का चेहरा बदलने के लिए '🔄 नया चेहरा बनाएं' दबा सकते हैं।
-        </p>
-        <div class="grid-3" id="characters-grid"></div>
+        <div class="asset-grid" id="characters-grid">
+          <div class="empty-state">
+            <div class="empty-icon">👥</div>
+            <div class="empty-text">अभी कोई कलाकार नहीं</div>
+            <div class="empty-hint">कृपया पहले टैब 1 में कहानी दर्ज करें</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- TAB 4: 15s Scene Storyboard with Video Model Selector -->
+    <!-- TAB 4: Scene Storyboard -->
     <div id="tab-scenes" class="tab-content">
       <div class="glass-card">
-        
-        <!-- Video Model Selection Bar -->
-        <div class="model-selector-box">
+        <!-- Model Selector -->
+        <div class="model-selector">
           <div>
-            <label style="color:var(--gold-primary); margin-bottom:4px; font-size:14px;">🎥 वीडियो बनाने के लिए AI मॉडल चुनें (Choose AI Video Model):</label>
-            <div style="font-size:12px; color:var(--text-muted);">अपनी पसंद के अनुसार वीडियो मॉडल चुनकर रेंडर करें।</div>
+            <label>🎥 AI वीडियो मॉडल चुनें</label>
+            <div class="model-hint">अपनी GPU क्षमता अनुसार मॉडल चुनें</div>
           </div>
-          <div style="min-width: 380px;">
-            <select id="selected-video-model" style="background:#0a0c10; font-weight:700; color:var(--gold-primary); border-color:var(--gold-primary);">
-              <option value="wan2_1_14b" selected>🌟 Wan2.1-14B (Alibaba Flagship - 1080p Cinema Master ~28GB)</option>
-              <option value="minimax_h3">🎬 MiniMax H3 (Hailuo 3.0 - 15s Ref2VA Checkpoint ~18.5GB)</option>
-              <option value="wan2_1_1_3b">⚡ Wan2.1-1.3B (Ultra-Fast 720p Diffusion ~3.2GB)</option>
-              <option value="svd_xt">🚀 Stable Video Diffusion XT (Native PyTorch CUDA GPU)</option>
-              <option value="cloud_diffusion">🌐 Cloud Neural Video Diffusion (Instant Zero-Wait)</option>
+          <div style="flex:1; max-width:420px;">
+            <select id="selected-video-model">
+              <option value="wan2_1_14b" selected>🌟 Wan2.1-14B (1080p Master ~28GB)</option>
+              <option value="minimax_h3">🎬 MiniMax H3 (15s Ref2VA ~18.5GB)</option>
+              <option value="wan2_1_1_3b">⚡ Wan2.1-1.3B (720p Fast ~3.2GB)</option>
+              <option value="svd_xt">🚀 SVD-XT (Native CUDA GPU)</option>
+              <option value="cloud_diffusion">🌐 Cloud Diffusion (Instant)</option>
             </select>
           </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="card-header">
           <div>
-            <div class="card-title" style="margin-bottom: 4px;">15-सेकंड सीन स्टोरीबोर्ड (Exact Context Matched)</div>
-            <p style="color: var(--text-muted); font-size: 13px;">कहानी की हर पंक्ति से सटीकता से जुड़े हुए 15-सेकंड के सीन्स।</p>
+            <div class="card-title">15-सेकंड सीन स्टोरीबोर्ड</div>
+            <div class="card-subtitle">कहानी की हर पंक्ति से सटीकता से जुड़े 15-सेकंड के सीन्स</div>
           </div>
           <button class="btn btn-gold" onclick="generateDraftMovie()">
-            <span>⚡ ड्राफ्ट मूवी रेंडर करें (Generate 15s Movie)</span>
+            ⚡ ड्राफ्ट मूवी रेंडर करें
           </button>
         </div>
-        <div id="scenes-timeline"></div>
+
+        <div id="scenes-timeline">
+          <div class="empty-state">
+            <div class="empty-icon">🎞️</div>
+            <div class="empty-text">अभी कोई सीन नहीं</div>
+            <div class="empty-hint">कृपया पहले टैब 1 में कहानी विश्लेषित करें</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- TAB 5: Draft vs Final Movie -->
+    <!-- TAB 5: Movie Theater -->
     <div id="tab-movie" class="tab-content">
       <div class="glass-card">
-        <div class="card-title">
-          <span>सिनेमा थियेटर एवं एक्सपोर्ट (Cinema Master Player)</span>
-          <span class="badge" id="movie-quality-badge">Draft Preview (Multi-Track FFmpeg)</span>
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              सिनेमा थियेटर एवं एक्सपोर्ट
+              <span class="badge badge-gold" id="movie-quality-badge">Draft Preview</span>
+            </div>
+          </div>
         </div>
 
         <div class="cinema-stage">
-          <video id="full-movie-player" class="cinema-video" controls poster="">
+          <video id="full-movie-player" class="cinema-video" controls>
             <source id="movie-video-src" src="" type="video/mp4">
-            आपका ब्राउज़र वीडियो प्लेयर का समर्थन नहीं करता।
           </video>
           <div class="stage-controls">
             <div>
-              <div style="font-weight: 700; font-size: 16px;" id="player-movie-title">गाँव का रहस्यमयी अंधेरा</div>
-              <div style="font-size: 12px; color: var(--text-muted);" id="player-movie-meta">Multi-Model AI Cinema Master</div>
+              <div class="movie-title-text" id="player-movie-title">—</div>
+              <div class="movie-meta" id="player-movie-meta">कहानी विश्लेषित करें और ड्राफ्ट मूवी बनाएं</div>
             </div>
-            <div style="display: flex; gap: 12px;">
-              <a class="btn btn-secondary" id="btn-download-srt" href="#" download="subtitles.srt" style="display: none;">
-                📜 सबटाइटल (.SRT)
+            <div class="stage-buttons">
+              <a class="btn btn-secondary" id="btn-download-srt" href="#" download="subtitles.srt" style="display:none;">
+                📜 SRT
               </a>
-              <a class="btn btn-secondary" id="btn-download-mp4" href="#" download="movie.mp4" style="display: none;">
-                📥 डाउनलोड मूवी (.MP4)
+              <a class="btn btn-secondary" id="btn-download-mp4" href="#" download="movie.mp4" style="display:none;">
+                📥 MP4 डाउनलोड
               </a>
               <button class="btn btn-approve" id="btn-approve-final" onclick="approveFinalMovie()">
-                ✨ 1080p फाइनल मास्टर रेंडर करें
+                ✨ 1080p फाइनल मास्टर
               </button>
             </div>
           </div>
@@ -601,39 +971,77 @@
     </div>
   </main>
 
+  <!-- Footer -->
+  <footer>
+    🎬 AI Hindi Cinema Studio v3.0 — Powered by Flux.1, Wan2.1, MiniMax H3, Edge-TTS | 
+    <a href="/docs" target="_blank">API Docs</a>
+  </footer>
+
   <script>
     let currentProject = null;
     const API_BASE = window.location.origin;
 
-    function switchTab(tabId) {
+    // ─── Tab Navigation ──────────────────────────────────────────
+    function switchTab(tabId, btn) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      
       document.getElementById(tabId).classList.add('active');
-      event.currentTarget.classList.add('active');
+      if (btn) btn.classList.add('active');
     }
 
+    // ─── Toast Notifications ──────────────────────────────────────
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || icons.info}</span>
+        <span class="toast-msg">${message}</span>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('toast-exit');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ─── Progress Control ────────────────────────────────────────
+    function showProgress(text, percent = 0) {
+      const banner = document.getElementById('progress-banner');
+      const pText = document.getElementById('progress-text');
+      const pBar = document.getElementById('progress-bar-fill');
+      banner.style.display = 'flex';
+      pText.innerText = text;
+      pBar.style.width = percent + '%';
+    }
+
+    function hideProgress() {
+      document.getElementById('progress-banner').style.display = 'none';
+    }
+
+    // ─── System Restart ──────────────────────────────────────────
     async function restartApp() {
-      if (confirm('क्या आप वाकई ऐप को रिस्टार्ट करना चाहते हैं?')) {
-        try {
-          const res = await fetch(`${API_BASE}/api/system/restart`, { method: 'POST' });
-          const data = await res.json();
-          alert(data.message || 'ऐप सफलतापूर्वक रिस्टार्ट हो गया है!');
-          window.location.reload();
-        } catch (e) {
-          alert('रिस्टार्ट त्रुटि: ' + e.message);
-        }
+      if (!confirm('क्या आप वाकई ऐप को रिस्टार्ट करना चाहते हैं?\nसभी प्रोजेक्ट्स हट जाएंगे।')) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/system/restart`, { method: 'POST' });
+        const data = await res.json();
+        showToast(data.message || 'ऐप रिस्टार्ट हो गया!', 'success');
+        currentProject = null;
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (e) {
+        showToast('रिस्टार्ट त्रुटि: ' + e.message, 'error');
       }
     }
 
+    // ─── Story Analysis ──────────────────────────────────────────
     async function analyzeStory() {
       const btn = document.getElementById('btn-parse-story');
-      const pBanner = document.getElementById('progress-banner');
-      const pText = document.getElementById('progress-text');
-
       btn.disabled = true;
-      pBanner.style.display = 'flex';
-      pText.innerText = '🎭 [Flux.1 + Gemini] कहानी का सटीक विश्लेषण व नई 4K AI तस्वीरें बनाई जा रही हैं... (10-15 सेकंड)';
+      btn.innerHTML = '<span class="loader" style="border-top-color:var(--gold);"></span> विश्लेषण जारी...';
+
+      showProgress('🎭 कहानी का सटीक विश्लेषण व 4K AI तस्वीरें बनाई जा रही हैं...', 15);
 
       try {
         const res = await fetch(`${API_BASE}/api/story/analyze`, {
@@ -647,79 +1055,81 @@
           })
         });
 
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Server error');
+        }
+
         currentProject = await res.json();
         renderProjectAssets();
-        
-        pText.innerText = '✅ सभी नई 4K तस्वीरें, चेहरे और आवाज तैयार हैं!';
-        setTimeout(() => { pBanner.style.display = 'none'; }, 3000);
-        
-        document.querySelectorAll('.tab-btn')[3].click();
+
+        showProgress('✅ सभी 4K तस्वीरें, चेहरे और आवाज तैयार हैं!', 100);
+        showToast(`${currentProject.scenes.length} सीन, ${currentProject.characters.length} पात्र, ${currentProject.locations.length} स्थान तैयार!`, 'success');
+
+        setTimeout(() => {
+          hideProgress();
+          document.querySelectorAll('.tab-btn')[3].click();
+        }, 1500);
       } catch (err) {
-        alert('विश्लेषण त्रुटि: ' + err.message);
-        pBanner.style.display = 'none';
+        showToast('विश्लेषण त्रुटि: ' + err.message, 'error');
+        hideProgress();
       } finally {
         btn.disabled = false;
+        btn.innerHTML = '✨ स्क्रीनप्ले व AI तस्वीरें तैयार करें';
       }
     }
 
+    // ─── Character Re-Roll ──────────────────────────────────────
     async function reRollCharacterFace(charId) {
       if (!currentProject) return;
-      const pBanner = document.getElementById('progress-banner');
-      const pText = document.getElementById('progress-text');
-      pBanner.style.display = 'flex';
-      pText.innerText = '👤 [Flux.1 FaceID] नया 360° मानव चेहरा बनाया जा रहा है...';
+      showProgress('👤 नया 360° मानव चेहरा बनाया जा रहा है...', 40);
 
       try {
-        const res = await fetch(`${API_BASE}/api/character/${currentProject.project_id}/regenerate/${charId}`, { method: 'POST' });
-        const updatedChar = await res.json();
-        
+        await fetch(`${API_BASE}/api/character/${currentProject.project_id}/regenerate/${charId}`, { method: 'POST' });
+
         const pRes = await fetch(`${API_BASE}/api/project/${currentProject.project_id}`);
         currentProject = await pRes.json();
         renderProjectAssets();
-        
-        pText.innerText = '✅ नया चेहरा सफलतापूर्वक तैयार हो गया!';
-        setTimeout(() => { pBanner.style.display = 'none'; }, 2000);
+
+        showToast('नया चेहरा सफलतापूर्वक तैयार!', 'success');
       } catch (err) {
-        alert('चेहरा री-जनरेट में त्रुटि: ' + err.message);
-        pBanner.style.display = 'none';
+        showToast('चेहरा री-जनरेट में त्रुटि: ' + err.message, 'error');
       }
+      hideProgress();
     }
 
+    // ─── Location Re-Roll ───────────────────────────────────────
     async function reRollLocationArt(locId) {
       if (!currentProject) return;
-      const pBanner = document.getElementById('progress-banner');
-      const pText = document.getElementById('progress-text');
-      pBanner.style.display = 'flex';
-      pText.innerText = '🏰 [Flux.1] नई 4K लोकेशन फोटो बनाई जा रही है...';
+      showProgress('🏰 नई 4K लोकेशन फोटो बनाई जा रही है...', 40);
 
       try {
-        const res = await fetch(`${API_BASE}/api/location/${currentProject.project_id}/regenerate/${locId}`, { method: 'POST' });
-        const updatedLoc = await res.json();
-        
+        await fetch(`${API_BASE}/api/location/${currentProject.project_id}/regenerate/${locId}`, { method: 'POST' });
+
         const pRes = await fetch(`${API_BASE}/api/project/${currentProject.project_id}`);
         currentProject = await pRes.json();
         renderProjectAssets();
-        
-        pText.innerText = '✅ नई 4K लोकेशन फोटो तैयार हो गई!';
-        setTimeout(() => { pBanner.style.display = 'none'; }, 2000);
+
+        showToast('नई 4K लोकेशन फोटो तैयार!', 'success');
       } catch (err) {
-        alert('लोकेशन फोटो री-जनरेट में त्रुटि: ' + err.message);
-        pBanner.style.display = 'none';
+        showToast('लोकेशन री-जनरेट में त्रुटि: ' + err.message, 'error');
       }
+      hideProgress();
     }
 
+    // ─── Render Project Assets ──────────────────────────────────
     function renderProjectAssets() {
       if (!currentProject) return;
 
-      // 1. Render Locations with Re-Roll Button
-      const locContainer = document.getElementById('locations-grid');
-      locContainer.innerHTML = '';
+      // 1. Locations
+      const locGrid = document.getElementById('locations-grid');
+      locGrid.innerHTML = '';
       currentProject.locations.forEach(loc => {
-        locContainer.innerHTML += `
+        locGrid.innerHTML += `
           <div class="asset-card">
             <div class="asset-img-wrap">
-              <img class="asset-img" src="${loc.master_establishing_url}?t=${Date.now()}" alt="${loc.name}">
-              <div class="asset-badge">FLUX.1 4K ART</div>
+              <img class="asset-img" src="${loc.master_establishing_url}?t=${Date.now()}" alt="${loc.name}" loading="lazy">
+              <div class="asset-badge">FLUX.1 4K</div>
             </div>
             <div class="asset-body">
               <div class="asset-title">📍 ${loc.name}</div>
@@ -728,177 +1138,219 @@
                 <b>प्रॉप्स:</b> ${loc.anchor_props.join(', ')}<br>
                 <b>कलर टोन:</b> ${loc.color_palette}
               </div>
-              <button class="btn btn-secondary" style="width:100%; justify-content:center; padding:8px;" onclick="reRollLocationArt('${loc.location_id}')">
-                🔄 नई 4K फोटो बनाएं (Re-Roll Art)
+              <button class="btn btn-secondary" style="width:100%; justify-content:center;" onclick="reRollLocationArt('${loc.location_id}')">
+                🔄 नई 4K फोटो
               </button>
             </div>
-          </div>
-        `;
+          </div>`;
       });
 
-      // 2. Render Characters with Re-Roll Face Button & Voice
-      const charContainer = document.getElementById('characters-grid');
-      charContainer.innerHTML = '';
+      // 2. Characters
+      const charGrid = document.getElementById('characters-grid');
+      charGrid.innerHTML = '';
       currentProject.characters.forEach(char => {
         const sampleScene = currentProject.scenes.find(s => s.dialogue && s.dialogue.character_id === char.character_id);
-        const audioPlayerHtml = sampleScene && sampleScene.dialogue.audio_url 
+        const audioHtml = sampleScene && sampleScene.dialogue.audio_url
           ? `<div class="audio-player-box">
-              <span style="font-size:12px; color:var(--accent-green);">🎙️ आवाज:</span>
-              <audio controls src="${sampleScene.dialogue.audio_url}"></audio>
-             </div>`
-          : '';
+              <span style="font-size:11px; color:var(--accent-green);">🎙️</span>
+              <audio controls src="${sampleScene.dialogue.audio_url}" preload="none"></audio>
+             </div>` : '';
 
-        charContainer.innerHTML += `
+        charGrid.innerHTML += `
           <div class="asset-card">
             <div class="asset-img-wrap">
-              <img class="asset-img" src="${char.master_portrait_url}?t=${Date.now()}" alt="${char.name}">
-              <div class="asset-badge">FLUX.1 FACE-ID</div>
+              <img class="asset-img" src="${char.master_portrait_url}?t=${Date.now()}" alt="${char.name}" loading="lazy">
+              <div class="asset-badge">FLUX.1 PORTRAIT</div>
             </div>
             <div class="asset-body">
               <div class="asset-title">👤 ${char.name} (${char.age} वर्ष, ${char.gender})</div>
               <div class="asset-meta">
                 <b>रूप-रंग:</b> ${char.appearance}<br>
                 <b>वेशभूषा:</b> ${char.costume}<br>
-                <b>न्यूरल वॉइस:</b> ${char.voice_profile}
+                <b>वॉइस:</b> ${char.voice_profile}
               </div>
-              ${audioPlayerHtml}
-              <button class="btn btn-secondary" style="width:100%; justify-content:center; padding:8px;" onclick="reRollCharacterFace('${char.character_id}')">
-                🔄 नया चेहरा बनाएं (Re-Roll Face)
+              ${audioHtml}
+              <button class="btn btn-secondary" style="width:100%; justify-content:center;" onclick="reRollCharacterFace('${char.character_id}')">
+                🔄 नया चेहरा
               </button>
             </div>
-          </div>
-        `;
+          </div>`;
       });
 
-      // 3. Render 15s Scenes Timeline with Exact Context Mapping
-      const scenesContainer = document.getElementById('scenes-timeline');
-      scenesContainer.innerHTML = '';
+      // 3. Scenes Timeline
+      const timeline = document.getElementById('scenes-timeline');
+      timeline.innerHTML = '';
       currentProject.scenes.forEach(sc => {
-        const videoHtml = sc.draft_video_url 
-          ? `<video src="${sc.draft_video_url}?t=${Date.now()}" controls style="width:100%; height:100%; object-fit:cover;"></video>`
-          : `<img src="${sc.composite_keyframe_url}?t=${Date.now()}" alt="Keyframe">`;
+        const mediaHtml = sc.draft_video_url
+          ? `<video src="${sc.draft_video_url}?t=${Date.now()}" controls preload="none" style="width:100%;height:100%;object-fit:cover;"></video>`
+          : `<img src="${sc.composite_keyframe_url}?t=${Date.now()}" alt="Keyframe" loading="lazy">`;
 
-        scenesContainer.innerHTML += `
+        const dialogueHtml = sc.dialogue
+          ? `<div class="scene-dialogue">🎙️ <b>${sc.dialogue.character_name}:</b> "${sc.dialogue.text}"</div>` : '';
+
+        timeline.innerHTML += `
           <div class="scene-card">
-            <div class="scene-preview-box">
-              ${videoHtml}
-              <div class="asset-badge">SCENE ${sc.scene_number} (${sc.duration_seconds}s)</div>
+            <div class="scene-preview">
+              ${mediaHtml}
+              <div class="scene-number-badge">SCENE ${sc.scene_number} • ${sc.duration_seconds}s</div>
             </div>
-            <div style="display:flex; flex-direction:column; gap:6px;">
-              <div style="font-weight:700; color:var(--gold-primary); font-size:14px;">
-                📍 ${sc.location_name} • 🎥 ${sc.camera_movement}
-              </div>
-              <div class="scene-prompt">${sc.visual_prompt}</div>
-              ${sc.dialogue ? `<div style="font-size:13px; color:#93c5fd;">🎙️ <b>${sc.dialogue.character_name}:</b> "${sc.dialogue.text}"</div>` : ''}
+            <div class="scene-info">
+              <div class="scene-location">📍 ${sc.location_name}</div>
+              <div class="scene-prompt-box">${sc.visual_prompt.substring(0, 150)}...</div>
+              ${dialogueHtml}
             </div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="scene-actions">
               <button class="btn btn-secondary" onclick="regenerateScene(${sc.scene_number})">
-                🔄 सीन री-जनरेट
+                🔄 री-जनरेट
               </button>
             </div>
-          </div>
-        `;
+          </div>`;
       });
+
+      // Update movie player
+      document.getElementById('player-movie-title').innerText = currentProject.title;
+      document.getElementById('player-movie-meta').innerText =
+        `${currentProject.scenes.length} सीन • ~${currentProject.total_duration_seconds || currentProject.scenes.length * currentProject.scene_duration_seconds}s • ${currentProject.genre}`;
     }
 
+    // ─── Generate Draft Movie ───────────────────────────────────
     async function generateDraftMovie() {
       if (!currentProject) {
-        alert('कृपया पहले कहानी दर्ज करके "Analyze & Parse" दबाएं।');
+        showToast('कृपया पहले कहानी दर्ज करके "Analyze" दबाएं', 'info');
         return;
       }
 
-      const chosenModel = document.getElementById('selected-video-model').value;
-      const pBanner = document.getElementById('progress-banner');
-      const pText = document.getElementById('progress-text');
-      pBanner.style.display = 'flex';
-      pText.innerText = `🎬 [${chosenModel.toUpperCase()}] 15s AI वीडियो क्लिप्स व मूवी बनाई जा रही है...`;
+      const model = document.getElementById('selected-video-model').value;
+      showProgress(`🎬 [${model.toUpperCase()}] 15s AI वीडियो रेंडर हो रहे हैं...`, 20);
 
       try {
-        const res = await fetch(`${API_BASE}/api/render/draft/${currentProject.project_id}?video_model=${chosenModel}`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/api/render/draft/${currentProject.project_id}?video_model=${model}`, { method: 'POST' });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Render failed');
+        }
+
         currentProject = await res.json();
         renderProjectAssets();
 
         if (currentProject.full_draft_movie_url) {
           const player = document.getElementById('full-movie-player');
-          player.src = currentProject.full_draft_movie_url + '?t=' + Date.now();
+          const source = document.getElementById('movie-video-src');
+          source.src = currentProject.full_draft_movie_url + '?t=' + Date.now();
           player.load();
 
           document.getElementById('btn-download-mp4').href = currentProject.full_draft_movie_url;
           document.getElementById('btn-download-mp4').style.display = 'inline-flex';
-          
+
           if (currentProject.subtitle_srt_url) {
             document.getElementById('btn-download-srt').href = currentProject.subtitle_srt_url;
             document.getElementById('btn-download-srt').style.display = 'inline-flex';
           }
 
-          pText.innerText = '🎉 15s AI मूवी सफलतापूर्वक तैयार है!';
-          setTimeout(() => { pBanner.style.display = 'none'; }, 4000);
-          document.querySelectorAll('.tab-btn')[4].click();
+          showToast('🎉 ड्राफ्ट मूवी सफलतापूर्वक तैयार!', 'success');
+          setTimeout(() => {
+            hideProgress();
+            document.querySelectorAll('.tab-btn')[4].click();
+          }, 1000);
         }
       } catch (err) {
-        alert('ड्राफ्ट निर्माण में त्रुटि: ' + err.message);
-        pBanner.style.display = 'none';
+        showToast('ड्राफ्ट निर्माण में त्रुटि: ' + err.message, 'error');
+        hideProgress();
       }
     }
 
+    // ─── Regenerate Single Scene ────────────────────────────────
     async function regenerateScene(sceneNumber) {
-      const currentScene = currentProject.scenes.find(s => s.scene_number === sceneNumber);
-      const defaultPrompt = currentScene ? currentScene.visual_prompt : '';
-      const customPrompt = prompt('इस सीन के लिए प्रॉम्प्ट संपादित करें या नया विवरण लिखें:', defaultPrompt);
-      
-      if (customPrompt === null) return; // user cancelled
+      const scene = currentProject.scenes.find(s => s.scene_number === sceneNumber);
+      const defaultPrompt = scene ? scene.visual_prompt : '';
+      const customPrompt = prompt('इस सीन का प्रॉम्प्ट संपादित करें:', defaultPrompt);
 
-      const chosenModel = document.getElementById('selected-video-model').value;
-      const pBanner = document.getElementById('progress-banner');
-      const pText = document.getElementById('progress-text');
-      pBanner.style.display = 'flex';
-      pText.innerText = `🎬 सीन ${sceneNumber} को [${chosenModel.toUpperCase()}] द्वारा नए प्रॉम्प्ट के साथ रेंडर किया जा रहा है...`;
+      if (customPrompt === null) return;
+
+      const model = document.getElementById('selected-video-model').value;
+      showProgress(`🎬 सीन ${sceneNumber} री-रेंडर हो रहा है...`, 30);
 
       try {
-        const res = await fetch(`${API_BASE}/api/scene/${currentProject.project_id}/regenerate/${sceneNumber}?custom_prompt=${encodeURIComponent(customPrompt || '')}&video_model=${chosenModel}`, {
+        await fetch(`${API_BASE}/api/scene/${currentProject.project_id}/regenerate/${sceneNumber}?custom_prompt=${encodeURIComponent(customPrompt || '')}&video_model=${model}`, {
           method: 'POST'
         });
+
         const pRes = await fetch(`${API_BASE}/api/project/${currentProject.project_id}`);
         currentProject = await pRes.json();
         renderProjectAssets();
-        pText.innerText = `✅ सीन ${sceneNumber} सफलतापूर्वक नए प्रॉम्प्ट के अनुसार तैयार हो गया!`;
-        setTimeout(() => { pBanner.style.display = 'none'; }, 3000);
+
+        showToast(`सीन ${sceneNumber} सफलतापूर्वक तैयार!`, 'success');
       } catch (err) {
-        alert('सीन री-जनरेट में त्रुटि: ' + err.message);
-        pBanner.style.display = 'none';
+        showToast('सीन री-जनरेट में त्रुटि: ' + err.message, 'error');
       }
+      hideProgress();
     }
 
+    // ─── Approve Final Movie ────────────────────────────────────
     async function approveFinalMovie() {
       if (!currentProject) return;
-      const chosenModel = document.getElementById('selected-video-model').value;
+
+      const model = document.getElementById('selected-video-model').value;
       const btn = document.getElementById('btn-approve-final');
-      btn.innerHTML = '<span class="loader"></span> 1080p रेंडरिंग जारी है...';
       btn.disabled = true;
+      btn.innerHTML = '<span class="loader" style="width:16px;height:16px;border-top-color:#fff;"></span> 1080p रेंडरिंग...';
+
+      showProgress('🎬 1080p फाइनल मास्टर रेंडर हो रहा है...', 25);
 
       try {
-        const res = await fetch(`${API_BASE}/api/render/approve-final/${currentProject.project_id}?video_model=${chosenModel}`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/api/render/approve-final/${currentProject.project_id}?video_model=${model}`, { method: 'POST' });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Final render failed');
+        }
+
         currentProject = await res.json();
 
         if (currentProject.full_final_movie_url) {
           const player = document.getElementById('full-movie-player');
-          player.src = currentProject.full_final_movie_url + '?t=' + Date.now();
+          const source = document.getElementById('movie-video-src');
+          source.src = currentProject.full_final_movie_url + '?t=' + Date.now();
           player.load();
 
-          document.getElementById('movie-quality-badge').innerText = `1080p Full HD Master [${chosenModel.toUpperCase()}]`;
-          document.getElementById('movie-quality-badge').style.background = 'rgba(16, 185, 129, 0.2)';
-          document.getElementById('movie-quality-badge').style.color = '#10b981';
-          
+          const badge = document.getElementById('movie-quality-badge');
+          badge.innerText = `1080p MASTER [${model.toUpperCase()}]`;
+          badge.className = 'badge badge-green';
+
           document.getElementById('btn-download-mp4').href = currentProject.full_final_movie_url;
-          alert('बधाई हो! आपकी 1080p हाई-रेज़ोल्यूशन फाइनल मूवी तैयार है!');
+          showToast('🎉 1080p फाइनल मास्टर मूवी तैयार है!', 'success');
         }
       } catch (err) {
-        alert('फाइनल रेंडर में त्रुटि: ' + err.message);
+        showToast('फाइनल रेंडर में त्रुटि: ' + err.message, 'error');
       } finally {
-        btn.innerHTML = '✨ 1080p फाइनल मास्टर रेंडर करें';
+        btn.innerHTML = '✨ 1080p फाइनल मास्टर';
         btn.disabled = false;
+        hideProgress();
       }
     }
+
+    // ─── Keyboard Shortcuts ──────────────────────────────────────
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+      const tabs = document.querySelectorAll('.tab-btn');
+      if (e.key >= '1' && e.key <= '5') {
+        const idx = parseInt(e.key) - 1;
+        if (tabs[idx]) tabs[idx].click();
+      }
+    });
+
+    // ─── LocalStorage Project Save/Load ──────────────────────────
+    function autoSaveProject() {
+      if (currentProject) {
+        try {
+          localStorage.setItem('ahcs_last_project', JSON.stringify(currentProject));
+        } catch(e) { /* storage full, ignore */ }
+      }
+    }
+
+    // Auto-save every 30 seconds
+    setInterval(autoSaveProject, 30000);
   </script>
 </body>
 </html>

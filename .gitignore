@@ -1,26 +1,44 @@
-# Python cache
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual Environment
 venv/
 .venv/
+env/
 
-# Media Store generated outputs
-backend/media_store/
+# Generated Media Assets (regenerated at runtime)
 media_store/
-*.mp4
-*.wav
-*.mp3
-*.png
-*.jpg
-*.srt
-*.txt
 
-# ComfyUI & logs
-ComfyUI/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
 *.log
-*.safetensors
-*.ckpt
+comfyui.log
+nohup.out
+
+# Environment
+.env
+.env.local
+
+# ComfyUI (downloaded on server)
+ComfyUI/
+
+# FFmpeg concat manifests
+concat_*.txt
